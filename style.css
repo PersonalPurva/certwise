@@ -90,19 +90,13 @@ button.primary {
   color: white;
 }
 
-.tabs {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-
-.tab.active {
+a.button {
+  display: inline-block;
   background-color: #1f3a68;
   color: white;
-}
-
-.hidden {
-  display: none;
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 4px;
 }
 
 .small {
@@ -141,6 +135,31 @@ a {
 .green { background-color: #dff3e3; color: #1d6b2f; border: 1px solid #1d6b2f; }
 .amber { background-color: #fff3d6; color: #8a5a00; border: 1px solid #8a5a00; }
 .red   { background-color: #fde2e2; color: #a12020; border: 1px solid #a12020; }
+.grey  { background-color: #eef1f5; color: #3d4652; border: 1px solid #8a94a3; }
+
+/* genuineness and market value side by side */
+.two {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.panel {
+  flex: 1;
+  min-width: 280px;
+  border: 1px solid #ccd3e0;
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.panel h4 {
+  margin-top: 4px;
+}
+
+.small-list {
+  font-size: 14px;
+  padding-left: 20px;
+}
 
 .warn {
   background-color: #fff3d6;
@@ -175,11 +194,6 @@ td.pts {
   text-align: center;
 }
 
-td.found {
-  font-style: italic;
-  color: #a12020;
-}
-
 .alts {
   background-color: #eef6ff;
   border: 1px solid #b9d3f0;
@@ -191,66 +205,9 @@ td.found {
   margin: 6px 0;
 }
 
-fieldset.q {
-  border: 1px solid #ccd3e0;
-  border-radius: 4px;
-  margin: 0 0 10px 0;
-  padding: 8px 12px;
-}
-
-fieldset.q legend {
-  font-weight: bold;
-  padding: 0 4px;
-}
-
-label.opt {
-  display: block;
-  margin: 4px 0;
-  cursor: pointer;
-}
-
 h4 {
   margin: 16px 0 6px 0;
   color: #1f3a68;
-}
-
-.fit {
-  font-size: 15px;
-  background-color: #dff3e3;
-  color: #1d6b2f;
-  border: 1px solid #1d6b2f;
-  border-radius: 4px;
-  padding: 2px 8px;
-}
-
-.chip {
-  display: inline-block;
-  background-color: #e8edf6;
-  border: 1px solid #ccd3e0;
-  border-radius: 12px;
-  padding: 3px 10px;
-  margin: 2px 0;
-  font-size: 14px;
-}
-
-.tag {
-  background-color: #1f3a68;
-  color: white;
-  border-radius: 4px;
-  padding: 2px 8px;
-  font-size: 14px;
-}
-
-.bar {
-  background-color: #e8edf6;
-  height: 12px;
-  width: 100%;
-  min-width: 120px;
-}
-
-.bar div {
-  background-color: #1f3a68;
-  height: 12px;
 }
 
 .quote {

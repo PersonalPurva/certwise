@@ -1,10 +1,8 @@
 // CertWise - core logic (no HTML in this file)
-// 1. findCert()      : match what the student typed to a certificate (handles typos)
-// 2. demandSources() : verified sources (from the monthly refresh) that call the certificate in demand
-// 3. scoreCert()     : five checks -> score -> verdict
-// 4. bestAlternatives(): best certificates in our list for the same role
-// 5. checkAd()       : pressure tactics inside an advertisement
-// 6. scoreQuiz()     : "Find my role" quiz -> fit % for every role
+// 1. findCert()     : match what the user typed to a certificate (handles typos)
+// 2. checkGenuine() : is the certificate real? (official verification link / ID, UGC fake-university list)
+// 3. marketValue()  : market value score from three checks (recognition, proof of skill, job demand)
+// 4. betterValue()  : higher-value certificates in the same field
 
 // ---------- text helpers ----------
 
@@ -92,26 +90,174 @@ function findCert(query, certs) {
   return null;
 }
 
-// ---------- 2. demand from verified sources ----------
+// ---------- 2. is it genuine? ----------
 
-function escapeRegex(s) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+// "https://www.credly.com/badges/abc" -> "credly.com"; returns null if it isn't a web link
+function hostOf(link) {
+  let text = link.trim();
+  if (!/^https?:\/\//i.test(text)) {
+    if (!/^[a-z0-9-]+(\.[a-z0-9-]+)+(\/|$)/i.test(text)) return null;   // not even "site.com/..."
+    text = "https://" + text;
+  }
+  try {
+    return new URL(text).hostname.toLowerCase().replace(/^www\./, "");
+  } catch (e) {
+    return null;
+  }
 }
 
-// true if the alias appears as a separate word / phrase (so "cka" does not match inside "mckay")
-function mentions(text, alias) {
-  const re = new RegExp("(^|[^a-z0-9])" + escapeRegex(alias) + "($|[^a-z0-9])", "i");
-  return re.test(text);
+function pathOf(link) {
+  let text = link.trim();
+  if (!/^https?:\/\//i.test(text)) text = "https://" + text;
+  try {
+    return new URL(text).pathname.toLowerCase();
+  } catch (e) {
+    return "";
+  }
 }
 
-// live = LIVE from data/live.js; returns the list of verified sources, or null if never refreshed
+// is host the official domain, or a part of it (e.g. "verify.comptia.org" is on "comptia.org")?
+function onDomain(host, domain) {
+  return host === domain || host.endsWith("." + domain);
+}
+
+// the "name" part of a domain: "credly.com" -> "credly", "nptel.ac.in" -> "nptel"
+function brandOf(domain) {
+  const parts = domain.split(".");
+  let base = parts[parts.length - 2];
+  if (parts.length >= 3 && ["ac", "co", "gov", "org", "edu", "net"].includes(base)) {
+    base = parts[parts.length - 3];
+  }
+  return base;
+}
+
+// a copy-cat site: uses the brand name, or a small typo of it, but is NOT the official domain
+function looksLike(host, domain) {
+  if (onDomain(host, domain)) return false;
+  const brand = brandOf(domain);
+  if (brand.length < 5) return false;           // too short to judge ("learn", "isc2")
+  const labels = host.split(/[.-]/);
+  return host.includes(brand) || labels.some(l => l.length >= 4 && editDistance(l, brand) <= 2);
+}
+
+// is the issuer one of UGC's fake universities? returns the list entry or null
+function matchFakeUni(name, fakeUnis) {
+  const plain = text => normalize(text).replace(/[.\-]/g, " ").replace(/\s+/g, " ").trim();
+  const typed = plain(name);
+  if (typed.length < 6) return null;
+  for (const entry of fakeUnis) {
+    const core = plain(entry.split(",")[0].replace(/\(.*?\)/g, " "));   // name without place / short form
+    if (typed.includes(core) || (typed.length >= 10 && core.includes(typed)) || editDistance(typed, core) <= 2) {
+      return entry;
+    }
+  }
+  return null;
+}
+
+// input = { link: "...", issuer: "..." } (both optional)
+// returns { level, verdict, reasons, method, page }
+function checkGenuine(cert, input, methods, certVerify, fakeUnis) {
+  const method = methods[certVerify[cert.id]] || methods.unknownpage;
+  const result = { level: "grey", verdict: "", reasons: [], method: method, page: method.page };
+
+  // a) issued by a fake university?
+  if (input.issuer) {
+    const fake = matchFakeUni(input.issuer, fakeUnis);
+    if (fake) {
+      result.level = "red";
+      result.verdict = "Fake university";
+      result.reasons.push("\"" + fake + "\" is on UGC's list of fake universities (February 2026). " +
+        "Its degrees and certificates are not valid for jobs or higher studies.");
+      result.page = null;
+      return result;
+    }
+  }
+
+  // b) no official way to check it at all
+  if (method.domains.length === 0) {
+    result.level = "amber";
+    result.verdict = method === methods.none ? "Can't be verified" : "No public check found";
+    result.reasons.push(method.how);
+    return result;
+  }
+
+  const text = (input.link || "").trim();
+  if (text === "") {
+    result.verdict = "Not checked yet";
+    result.reasons.push("Paste the verification link or ID from the certificate. " + method.how);
+    return result;
+  }
+
+  // c) a web link
+  const host = hostOf(text);
+  if (host) {
+    if (method.domains.some(d => onDomain(host, d))) {
+      if (method.path === "" || pathOf(text).includes(method.path)) {
+        result.level = "green";
+        result.verdict = "Official verification link";
+        result.reasons.push("The link is on " + host + ", the official place to check " + cert.issuer + " certificates.");
+        result.reasons.push("Last step: open it. If it shows the same name, certificate and date, the certificate is genuine.");
+        result.page = text.startsWith("http") ? text : "https://" + text;
+      } else {
+        result.level = "amber";
+        result.verdict = "Official site, but not a verification page";
+        result.reasons.push("The link is on " + host + ", but a real verification link looks like this: " +
+          method.domains[0] + method.path + "... " + method.how);
+      }
+      return result;
+    }
+
+    const allDomains = [];
+    for (const key in methods) {
+      for (const d of methods[key].domains) {
+        if (!allDomains.includes(d)) allDomains.push(d);
+      }
+    }
+    const copied = allDomains.find(d => looksLike(host, d));
+    if (copied) {
+      result.level = "red";
+      result.verdict = "Look-alike website";
+      result.reasons.push("\"" + host + "\" looks like " + copied + " but it is a different website. " +
+        "Fake certificates often point to copy-cat sites, so treat this certificate as fake until checked.");
+      return result;
+    }
+
+    const other = allDomains.find(d => onDomain(host, d));
+    result.level = "amber";
+    result.verdict = "Not the issuer's official site";
+    if (other) {
+      result.reasons.push("This is a " + other + " link, but " + cert.issuer + " certificates are checked through: " + method.name + ".");
+    } else {
+      result.reasons.push(host + " is not where " + cert.issuer + " certificates are checked. Ask for the official link. " + method.how);
+    }
+    return result;
+  }
+
+  // d) an ID / code
+  if (method.idRe) {
+    if (new RegExp(method.idRe).test(text)) {
+      result.verdict = "ID looks right - confirm it";
+      result.reasons.push("The ID has the right format. Enter it on the official page to see the holder's name and status.");
+    } else {
+      result.level = "amber";
+      result.verdict = "ID doesn't match the format";
+      result.reasons.push(cert.issuer + " IDs look like " + method.idHint + ". Check the number again, or treat the certificate as doubtful.");
+    }
+  } else {
+    result.verdict = "Check the ID on the official page";
+    result.reasons.push(method.how);
+  }
+  return result;
+}
+
+// ---------- 3. market value score ----------
+
+// live = LIVE from data/live.js; returns the list of verified sources, or null if never looked up
 function demandSources(cert, live) {
   if (!live || !live.certs || !live.certs[cert.id]) return null;
   const demand = live.certs[cert.id].demand;
   return Array.isArray(demand) ? demand : null;   // no list = demand not looked up yet (free refresh)
 }
-
-// ---------- 3. score one certificate ----------
 
 const ISSUER_POINTS = {
   vendor:   [2, "Issued by the company or body whose technology / field it tests."],
@@ -126,201 +272,96 @@ const ASSESS_POINTS = {
   attendance: [0, "You get it just for attending."]
 };
 
-const COST_POINTS = {
-  free:   [2, "Free."],
-  low:    [2, "Low cost (under Rs 2,000)."],
-  medium: [1, "Medium cost (Rs 2,000 - 10,000)."],
-  high:   [0, "Expensive (above Rs 10,000) - pay only once you are sure."]
-};
+// demand labels in data/roles.js (each one comes from a cited report)
+const DEMAND_POINTS = { "Growing fast": 2, "In demand": 2, "IT under pressure": 1 };
 
-function scoreCert(cert, roleId, live) {
+// the jobs a certificate leads to, with their demand (best one first)
+function jobsFor(cert, roles, roleInfo) {
+  const list = [];
+  for (const id of cert.roles) {
+    if (id === "all" || !roleInfo[id]) continue;
+    const role = roles.find(r => r.id === id);
+    list.push({ id: id, name: role ? role.name : id, info: roleInfo[id],
+                points: DEMAND_POINTS[roleInfo[id].demand.label] || 0 });
+  }
+  list.sort((a, b) => b.points - a.points);
+  return list;
+}
+
+function marketValue(cert, roles, roleInfo, live) {
   const checks = [];
 
   // check 1: who gives it
   const iss = ISSUER_POINTS[cert.issuerType];
-  checks.push({ name: "Who gives it", points: iss[0], max: 2, reason: iss[1] });
+  checks.push({ name: "Recognition (who gives it)", points: iss[0], max: 2, reason: iss[1] });
 
   // check 2: how you earn it
   const as = ASSESS_POINTS[cert.assessment];
-  checks.push({ name: "How you earn it", points: as[0], max: 2, reason: as[1] });
+  checks.push({ name: "Proof of skill (how you earn it)", points: as[0], max: 2, reason: as[1] });
 
-  // check 3: does it fit the chosen role
-  let roleFit = 0;
-  if (cert.roles.includes(roleId)) {
-    roleFit = 2;
-    checks.push({ name: "Fits your role", points: 2, max: 2, reason: "Made for this kind of job." });
-  } else if (cert.roles.includes("all")) {
-    roleFit = 1;
-    checks.push({ name: "Fits your role", points: 1, max: 2, reason: "Depends on the topic you pick." });
-  } else {
-    checks.push({ name: "Fits your role", points: 0, max: 2, reason: "Made for a different kind of job." });
-  }
-
-  // check 4: do verified sources call it in demand?
+  // check 3: is it in demand? verified sources from the monthly refresh first, otherwise demand for its jobs
+  const jobs = jobsFor(cert, roles, roleInfo);
   const demand = demandSources(cert, live);
   if (cert.aliases.length === 0) {
-    checks.push({ name: "In demand (verified sources)", points: 0, max: 2,
-      reason: "Not a named credential, so employers can't ask for it." });
-  } else if (demand === null) {
-    checks.push({ name: "In demand (verified sources)", points: null, max: 2,
-      reason: "Not scored yet - this certificate hasn't been through the monthly refresh." });
-  } else {
-    let pts = 0;
-    if (demand.length >= 2) pts = 2;
-    else if (demand.length === 1) pts = 1;
-    checks.push({ name: "In demand (verified sources)", points: pts, max: 2,
+    checks.push({ name: "Job demand", points: 0, max: 2, reason: "Not a named credential, so employers can't ask for it." });
+  } else if (demand !== null) {
+    const pts = demand.length >= 2 ? 2 : demand.length;
+    checks.push({ name: "Job demand", points: pts, max: 2, src: [],
       reason: demand.length === 0 ? "No verified source calls it in demand."
         : "Called in demand by " + demand.length + " verified source" + (demand.length > 1 ? "s" : "") + "." });
+  } else if (jobs.length === 0) {
+    checks.push({ name: "Job demand", points: 1, max: 2, reason: "Depends on the course you pick." });
+  } else {
+    const best = jobs[0];
+    checks.push({ name: "Job demand", points: best.points, max: 2, src: best.info.demand.src,
+      reason: "It leads to " + best.name + " jobs: " + best.info.demand.note });
   }
 
-  // check 5: value for money
-  const co = COST_POINTS[cert.costBand];
-  checks.push({ name: "Cost", points: co[0], max: 2, reason: co[1] + " " + cert.costNote });
-
-  // add up only the checks that were scored
   let total = 0, max = 0;
   for (const c of checks) {
-    if (c.points !== null) {
-      total += c.points;
-      max += c.max;
-    }
+    total += c.points;
+    max += c.max;
   }
   const percent = Math.round((total / max) * 100);
 
-  // verdict - hard blockers first
-  let verdict, level;
-  if (cert.status === "closed") {
-    verdict = "Not available"; level = "red";
-  } else if (cert.eligibility) {
-    verdict = "Not yet"; level = "amber";
-  } else if (roleFit === 0) {
-    verdict = "Not for this role"; level = "amber";
-  } else if (percent >= 70) {
-    verdict = "Worth it"; level = "green";
-  } else if (percent >= 45) {
-    verdict = "Think twice"; level = "amber";
-  } else {
-    verdict = "Skip"; level = "red";
-  }
+  let band, level;
+  if (percent >= 70) { band = "High market value"; level = "green"; }
+  else if (percent >= 45) { band = "Medium market value"; level = "amber"; }
+  else { band = "Low market value"; level = "red"; }
+
+  // things that matter more than the score
+  let warning = null;
+  if (cert.status === "closed") warning = "No longer offered - it can't be earned now.";
+  else if (cert.eligibility) warning = "Not for freshers yet: " + cert.eligibility;
 
   return { cert: cert, checks: checks, total: total, max: max, percent: percent,
-           verdict: verdict, level: level, demand: demand };
+           band: band, level: level, warning: warning, jobs: jobs, demand: demand };
 }
 
-// ---------- 4. better alternatives ----------
-
-// top `howMany` certificates made for the same role that get a "Worth it" verdict
-// sorted by score (high first), then by cost (cheap first)
-// (NPTEL fits every role, so the page shows it as a separate tip instead of here)
-function bestAlternatives(cert, roleId, certs, live, howMany) {
-  const list = [];
-  for (const c of certs) {
-    if (c.id === cert.id) continue;
-    if (!c.roles.includes(roleId)) continue;
-    const r = scoreCert(c, roleId, live);
-    if (r.verdict === "Worth it") list.push(r);
-  }
-  list.sort((a, b) => (b.percent - a.percent) || (costRank(a.cert) - costRank(b.cert)));
-  return list.slice(0, howMany);
-}
+// ---------- 4. higher-value certificates in the same field ----------
 
 function costRank(cert) {
   return ["free", "low", "medium", "high"].indexOf(cert.costBand);
 }
 
-// ---------- 5. check an advertisement ----------
-
-const AD_RULES = [
-  { id: "urgency", label: "Rushes you to decide",
-    why: "Countdown timers and 'last seats' stop you from comparing options.",
-    re: /(today only|only today|last \d+ seats|last few seats|seats left|hurry|ends (in|tonight|soon|today)|limited (time|seats|period|offer)|offer expires|closing soon|\b\d{1,2}:\d{2}:\d{2}\b)/i },
-  { id: "tinyprice", label: "Tiny entry price",
-    why: "A very low entry fee can be the start of a sales pitch for a costlier course - check what is sold at the end.",
-    re: /((₹|rs\.?|inr)\s?(9|19|29|49|99|199)(?![\d,]))/i },
-  { id: "bonus", label: "Big 'worth' numbers",
-    why: "'Bonuses worth Rs 15,000' is a value the seller picked, not a price anyone paid.",
-    re: /((worth|value)\s*(of\s*)?(₹|rs\.?|inr)\s?[\d,]+|free bonus|bonuses)/i },
-  { id: "guarantee", label: "Guaranteed results",
-    why: "No course can guarantee a job or salary. India's consumer protection authority (CCPA) bans such claims in coaching ads and has fined coaching centres for them.",
-    src: [{ name: "CCPA guidelines on coaching ads (Social Samosa)", url: "https://www.socialsamosa.com/industry-updates/ccpa-guidelines-tackle-misleading-ads-coaching-sector-7578017" },
-          { name: "CCPA fines on 24 coaching centres (Taxmann)", url: "https://www.taxmann.com/post/blog/consumer-protection-authority-fines-24-coaching-centres-%e2%82%b977-6-lakh-for-misleading-ads-urges-compliance-with-guidelines" }],
-    re: /(100\s?% (placement|job)|guaranteed (job|placement|salary|income)|job guarantee|placement guarantee|assured (job|placement))/i },
-  { id: "earning", label: "Earning promises",
-    why: "Income claims are easy to write and hard to check.",
-    re: /(\bearn (up to )?(₹|rs\.?|inr)\s?[\d,]+|[\d.]+\s?lpa|(₹|rs\.?)\s?[\d,]+\s?(\/|per)\s?month)/i },
-  { id: "speed", label: "Expert in hours",
-    why: "Real skills take weeks of practice, not a 3-hour session.",
-    re: /(\b10x\b|in (just )?\d+ (hours|hrs)|become (an )?expert|master .{0,30} in \d+ (hours|hrs))/i },
-  { id: "brand", label: "Big-company names",
-    why: "Teaching 'tools from Google / Microsoft' is not the same as a certificate issued by them. Check who signs the certificate.",
-    re: /(tools? (from|by|of|like) .{0,40}\b(google|microsoft|amazon|ibm|meta|openai|chatgpt|nvidia)\b|\b(google|microsoft|amazon|ibm|meta|openai|chatgpt|nvidia)\b.{0,30}\btools?\b)/i },
-  { id: "crowd", label: "Huge crowd numbers",
-    why: "Lots of people joining doesn't tell you what recruiters think.",
-    re: /(\d+(\.\d+)?\s?(lakh|lakhs|k|million|m|crore)\+?\s*(students|learners|people|professionals))/i }
-];
-
-const AD_GOOD = /(proctored|supervised exam|official exam|exam fee|credit transfer|credits|swayam|nptel|graded assignments?)/i;
-
-function checkAd(text, certs) {
-  const flags = [];
-  for (const rule of AD_RULES) {
-    const m = text.match(rule.re);
-    if (m) flags.push({ label: rule.label, why: rule.why, found: m[0].trim(), src: rule.src || [] });
-  }
-
-  const good = text.match(AD_GOOD);
-
-  // does the ad name a certificate we know?
-  const named = [];
-  const lower = text.toLowerCase();
+// up to `howMany` certificates that share a job with this one and score higher; cheaper first on a tie
+function betterValue(cert, certs, roles, roleInfo, live, howMany) {
+  const mine = marketValue(cert, roles, roleInfo, live);
+  const fields = cert.roles.filter(r => r !== "all");
+  const list = [];
   for (const c of certs) {
-    if (c.aliases.some(a => mentions(lower, a))) named.push(c);
+    if (c.id === cert.id || c.status === "closed" || c.eligibility) continue;
+    // same field; for a general certificate (workshop, NPTEL...) suggest free / low-cost ones instead
+    if (fields.length > 0 && !c.roles.some(r => fields.includes(r))) continue;
+    if (fields.length === 0 && costRank(c) > 1) continue;
+    const v = marketValue(c, roles, roleInfo, live);
+    if (v.percent > mine.percent) list.push(v);
   }
-
-  let verdict, level;
-  if (flags.length >= 3) { verdict = "High-pressure ad"; level = "red"; }
-  else if (flags.length >= 1) { verdict = "Be careful"; level = "amber"; }
-  else { verdict = "No pressure tactics found"; level = "green"; }
-
-  return { flags: flags, good: good ? good[0] : null, named: named, verdict: verdict, level: level };
-}
-
-// ---------- 6. "Find my role" quiz ----------
-
-// answers[i] = index of the option picked for question i
-// returns every role with its points and fit %, best first
-function scoreQuiz(answers, quiz, roleIds) {
-  const got = {}, max = {};
-  for (const id of roleIds) {
-    got[id] = 0;
-    max[id] = 0;
-  }
-
-  for (let i = 0; i < quiz.length; i++) {
-    // the most this role could have got on this question
-    for (const id of roleIds) {
-      let best = 0;
-      for (const opt of quiz[i].options) {
-        best = Math.max(best, opt.pts[id] || 0);
-      }
-      max[id] += best;
-    }
-    // what the student actually picked
-    const picked = quiz[i].options[answers[i]];
-    for (const id in picked.pts) {
-      got[id] += picked.pts[id];
-    }
-  }
-
-  const result = roleIds.map(id => ({
-    roleId: id, points: got[id], max: max[id],
-    percent: Math.round((got[id] / max[id]) * 100)
-  }));
-  result.sort((a, b) => b.percent - a.percent);
-  return result;
+  list.sort((a, b) => (b.percent - a.percent) || (costRank(a.cert) - costRank(b.cert)));
+  return list.slice(0, howMany);
 }
 
 if (typeof module !== "undefined") {
-  module.exports = { normalize, editDistance, rankCerts, findCert, mentions, demandSources,
-                     scoreCert, bestAlternatives, checkAd, scoreQuiz };
+  module.exports = { normalize, editDistance, rankCerts, findCert, hostOf, looksLike, matchFakeUni,
+                     checkGenuine, demandSources, marketValue, betterValue };
 }

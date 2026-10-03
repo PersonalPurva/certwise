@@ -1,7 +1,7 @@
 {
   "name": "certwise",
   "version": "1.0.0",
-  "description": "CertWise - find your role, check if a certificate is worth it, decode pushy ads. Team Ctrl Freaks, She Solves 3.0.",
+  "description": "CertWise - check if a certificate is genuine and what it is worth in the job market. Team Ctrl Freaks, She Solves 3.0.",
   "private": true,
   "scripts": {
     "start": "node serve.js",

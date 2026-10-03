@@ -1,6 +1,8 @@
-﻿// Test harness for CertWise logic (synthetic posts here are TEST-ONLY, never shipped)
+// Test harness for CertWise logic (sample links and "live" facts here are TEST-ONLY, never shipped)
 const L = require("../logic.js");
 const { CERTS, ROLES } = require("../data/certs.js");
+const { VERIFY_METHODS, CERT_VERIFY, FAKE_UNIS } = require("../data/verify.js");
+const { ROLE_INFO } = require("../data/roles.js");
 
 let fails = 0;
 function eq(name, got, want) {
@@ -18,9 +20,15 @@ for (const c of CERTS) {
     const allowed = { issuerType: ["vendor","academic","platform","unknown"], assessment: ["proctored","graded","attendance"], costBand: ["free","low","medium","high"] }[k];
     if (!allowed.includes(c[k])) { fails++; console.log("FAIL bad " + k + " in " + c.id); }
   }
-  for (const r of c.roles) if (r !== "all" && !ROLES.some(x => x.id === r)) { fails++; console.log("FAIL bad role " + r + " in " + c.id); }
+  for (const r of c.roles) if (r !== "all" && !ROLE_INFO[r]) { fails++; console.log("FAIL bad role " + r + " in " + c.id); }
+  if (!VERIFY_METHODS[CERT_VERIFY[c.id]]) { fails++; console.log("FAIL no verify method for " + c.id); }
 }
-console.log("certs:", CERTS.length);
+for (const key in VERIFY_METHODS) {
+  const m = VERIFY_METHODS[key];
+  if (m.domains.length > 0 && m.src.length === 0) { fails++; console.log("FAIL no proof for verify method " + key); }
+}
+eq("certs in list", CERTS.length, 31);
+eq("UGC fake universities", FAKE_UNIS.length, 32);
 
 // --- search ---
 const s = q => { const c = L.findCert(q, CERTS); return c ? c.id : null; };
@@ -33,43 +41,63 @@ eq("nptel java", s("nptel java"), "nptel");
 eq("tensorflow", s("tensorflow certificate"), "tf-dev");
 eq("ai tools workshop", s("AI tools workshop"), "workshop");
 eq("paid internship", s("paid virtual internship certificate"), "paid-internship");
-eq("ceh", s("CEH"), "ceh");
-eq("power bi", s("power bi pl-300"), "pl-300");
+eq("google data analytics", s("Google Data Analytics"), "google-data");
 eq("gibberish", s("qwerty zzz"), null);
 
-// --- mentions (word boundaries) ---
-eq("cka not in mckay", L.mentions("contact mckay for details", "cka"), false);
-eq("cka standalone", L.mentions("Must have CKA or CKAD", "cka"), true);
-eq("security+ with plus", L.mentions("CompTIA Security+ preferred", "security+"), true);
-eq("az-900", L.mentions("Azure (AZ-900) a plus", "az-900"), true);
+// --- genuineness ---
+const cert = id => CERTS.find(c => c.id === id);
+const g = (id, link, issuer) => L.checkGenuine(cert(id), { link: link || "", issuer: issuer || "" }, VERIFY_METHODS, CERT_VERIFY, FAKE_UNIS);
+eq("aws credly badge", g("aws-ccp", "https://www.credly.com/badges/sample-id").verdict, "Official verification link");
+eq("aws credly, not a badge page", g("aws-ccp", "https://www.credly.com/users/someone").verdict, "Official site, but not a verification page");
+eq("coursera verify link", g("google-data", "coursera.org/verify/SAMPLE123").verdict, "Official verification link");
+eq("coursera look-alike", g("google-data", "https://coursera-verify.com/verify/SAMPLE123").level, "red");
+eq("credly typo domain", g("aws-ccp", "https://www.credlly.com/badges/x").level, "red");
+eq("credly link for coursera cert", g("google-data", "https://www.credly.com/badges/x").verdict, "Not the issuer's official site");
+eq("unrelated site", g("google-data", "https://example.com/cert/1").verdict, "Not the issuer's official site");
+eq("nptel qr link", g("nptel", "https://nptel.ac.in/noc/E_Certificate/NPTEL00SAMPLE").level, "green");
+eq("comptia verify subdomain", g("secplus", "https://verify.comptia.org/").level, "green");
+eq("red hat id format ok", g("rhcsa", "140-123-456").verdict, "ID looks right - confirm it");
+eq("red hat id format wrong", g("rhcsa", "14012345").verdict, "ID doesn't match the format");
+eq("workshop can't be verified", g("workshop").verdict, "Can't be verified");
+eq("springboard no public page", g("springboard").verdict, "No public check found");
+eq("no link yet", g("aws-ccp").verdict, "Not checked yet");
+eq("fake university", g("nptel", "", "Commercial University Ltd, Daryaganj").verdict, "Fake university");
+eq("fake university typo", g("nptel", "", "Commercial Universty Ltd").verdict, "Fake university");
+eq("real university not flagged", g("nptel", "", "Savitribai Phule Pune University").verdict, "Not checked yet");
+eq("hostOf without https", L.hostOf("coursera.org/verify/x"), "coursera.org");
+eq("hostOf an ID", L.hostOf("140-123-456"), null);
+eq("subdomain is not look-alike", L.looksLike("verify.comptia.org", "comptia.org"), false);
+eq("look-alike with brand", L.looksLike("coursera-certificates.net", "coursera.org"), true);
 
-// --- scoring without posts (demand unscored) ---
-const sc = (id, role, posts) => L.scoreCert(CERTS.find(c => c.id === id), role, posts || []);
-let r = sc("workshop", "ai"); eq("workshop verdict", r.verdict, "Skip");
-r = sc("nptel", "dev"); eq("nptel verdict", r.verdict, "Worth it");
-r = sc("rhcsa", "cloud"); eq("rhcsa verdict (no posts)", r.verdict, "Worth it"); console.log("   rhcsa", r.total + "/" + r.max, r.percent + "%");
-r = sc("cissp", "sec"); eq("cissp blocked", r.verdict, "Not yet");
-r = sc("tf-dev", "ai"); eq("tf closed", r.verdict, "Not available");
-r = sc("google-cyber", "sec"); console.log("   google-cyber", r.total + "/" + r.max, r.percent + "%", r.verdict);
-r = sc("aws-saa", "cloud"); console.log("   aws-saa", r.total + "/" + r.max, r.percent + "%", r.verdict);
-r = sc("rhcsa", "web"); eq("rhcsa for web", r.verdict, "Not for this role");
-r = sc("participation", "dev"); eq("participation", r.verdict, "Skip");
-r = sc("paid-internship", "dev"); eq("paid internship", r.verdict, "Skip");
+// --- market value ---
+const mv = (id, live) => L.marketValue(cert(id), ROLES, ROLE_INFO, live || { certs: {}, roles: {} });
+let r = mv("workshop"); eq("workshop value", r.percent, 0); eq("workshop band", r.band, "Low market value");
+r = mv("aws-ccp"); eq("aws ccp value", r.percent, 100);
+r = mv("nptel"); eq("nptel value", r.percent, 83);
+r = mv("google-data"); eq("google data value", r.percent, 67); eq("google data band", r.band, "Medium market value");
+r = mv("oracle-java-se"); eq("java se (IT under pressure)", r.percent, 83);
+r = mv("cissp"); eq("cissp needs experience", r.warning !== null, true);
+r = mv("tf-dev"); eq("tf closed", r.warning, "No longer offered - it can't be earned now.");
+eq("aws ccp leads to cloud jobs", mv("aws-ccp").jobs[0].id, "cloud");
 
-// --- demand with TEST-ONLY synthetic posts ---
-// --- demand from verified live sources (TEST-ONLY sample, never shipped) ---
-const fakeLive = { certs: {
+// demand from verified live sources (TEST-ONLY sample, never shipped)
+const fakeLive = { roles: {}, certs: {
   rhcsa: { demand: [{ url: "https://a.example", quote: "q" }, { url: "https://b.example", quote: "q" }] },
   ccna: { demand: [{ url: "https://a.example", quote: "q" }] },
   "aws-ccp": { demand: [] },
   "az-104": { price: { value: "test value" } }   // free refresh: price checked, demand not looked up
 } };
-r = sc("rhcsa", "cloud", fakeLive); eq("2 sources -> 2 pts", r.checks[3].points, 2);
-r = sc("ccna", "sec", fakeLive); eq("1 source -> 1 pt", r.checks[3].points, 1);
-r = sc("aws-ccp", "cloud", fakeLive); eq("0 sources -> 0 pts", r.checks[3].points, 0);
-r = sc("az-900", "cloud", fakeLive); eq("not refreshed -> unscored", r.checks[3].points, null);
-r = sc("workshop", "cloud", fakeLive); eq("generic type -> 0 pts", r.checks[3].points, 0);
-r = sc("az-104", "cloud", fakeLive); eq("free refresh, no demand list -> unscored", r.checks[3].points, null);
+eq("2 sources -> 2 pts", mv("rhcsa", fakeLive).checks[2].points, 2);
+eq("1 source -> 1 pt", mv("ccna", fakeLive).checks[2].points, 1);
+eq("0 sources -> 0 pts", mv("aws-ccp", fakeLive).checks[2].points, 0);
+eq("no demand list -> job demand", mv("az-104", fakeLive).checks[2].points, 2);
+
+// higher value in the same field
+const better = (id) => L.betterValue(cert(id), CERTS, ROLES, ROLE_INFO, { certs: {}, roles: {} }, 3).map(v => v.cert.id);
+eq("workshop -> nptel first", better("workshop")[0], "nptel");
+eq("google data -> pl-300 suggested", better("google-data").includes("pl-300"), true);
+eq("aws ccp -> nothing higher", better("aws-ccp").length, 0);
+console.log("   better for google-cyber:", better("google-cyber").join(", "));
 
 // --- free refresh helpers (refresh/pages.js) ---
 const P = require("../refresh/pages.js");
@@ -93,49 +121,10 @@ eq("Rs. vs ₹ accepted", V.verifyFact({ value: "Rs 3.5-6 LPA", url: "https://x.
 eq("changed quote rejected", V.verifyFact({ value: "₹4 - 8 LPA", url: "https://x.example", quote: "Freshers typically earn ₹4–8 LPA in data analyst roles." }, page).ok, false);
 eq("number not in quote rejected", V.verifyFact({ value: "USD 150", url: "https://x.example", quote: "The exam costs USD 100." }, page).ok, false);
 eq("missing url rejected", V.verifyFact({ value: "USD 100", url: "", quote: "The exam costs USD 100." }, page).ok, false);
-eq("demand quote must name cert", V.quoteNamesCert("Employers want RHCSA holders", CERTS.find(c => c.id === "rhcsa")), true);
-eq("demand quote without cert", V.quoteNamesCert("Employers want Linux skills", CERTS.find(c => c.id === "rhcsa")), false);
-
-// --- alternative ---
-for (const [id, role] of [["workshop","ai"], ["google-cyber","sec"], ["paid-internship","web"], ["participation","dev"], ["aws-saa","cloud"], ["workshop","data"]]) {
-  const alts = L.bestAlternatives(CERTS.find(c => c.id === id), role, CERTS, [], 2);
-  console.log("alts for " + id + "/" + role + ":", alts.map(a => a.cert.id + " " + a.percent + "% " + a.cert.costBand).join(", "));
-}
-
-// --- ad check ---
-const ad = "LIVE AI Tools Workshop - only Rs 9 today! Learn 20+ AI tools from Google, Microsoft and OpenAI and become 10x more productive in just 3 hours. Get a certificate + bonuses worth Rs 15,000. Only 37 seats left - offer ends in 02:59:41. 5 lakh+ students already joined. Earn Rs 50,000 per month with AI.";
-const a = L.checkAd(ad, CERTS);
-console.log("ad verdict:", a.verdict, a.flags.length, a.flags.map(f => f.label + " [" + f.found + "]").join(" | "));
-eq("ad high pressure", a.verdict, "High-pressure ad");
-const a2 = L.checkAd("NPTEL course: 12 weeks, graded assignments, proctored exam at a centre, exam fee Rs 1000.", CERTS);
-console.log("ad2:", a2.verdict, a2.flags.map(f => f.label + " [" + f.found + "]").join(" | "), "good:", a2.good, "named:", a2.named.map(c => c.id));
-const a3 = L.checkAd("Prepare for AWS Certified Cloud Practitioner (CLF-C02). Official exam fee USD 100.", CERTS);
-console.log("ad3:", a3.verdict, a3.flags.map(f => f.label + " [" + f.found + "]").join(" | "), "named:", a3.named.map(c => c.id));
-eq("vendor ad not flagged brand", a3.flags.some(f => f.label === "Big-company names"), false);
-
-// --- quiz: every role must be reachable as the top match ---
-const { ROLE_INFO, QUIZ } = require("../data/roles.js");
-const roleIds = ROLES.map(r => r.id);
-for (const id of roleIds) {
-  // pick, for each question, the option that gives this role the most points
-  // (ties broken by fewest points to other roles)
-  const answers = QUIZ.map(q => {
-    let bestI = 0, bestScore = -1e9;
-    q.options.forEach((o, i) => {
-      const mine = o.pts[id] || 0;
-      const others = Object.keys(o.pts).filter(k => k !== id).reduce((s, k) => s + o.pts[k], 0);
-      const sc = mine * 10 - others;
-      if (sc > bestScore) { bestScore = sc; bestI = i; }
-    });
-    return bestI;
-  });
-  const res = L.scoreQuiz(answers, QUIZ, roleIds);
-  eq("quiz top for " + id, res[0].roleId, id);
-  if (!ROLE_INFO[id]) { fails++; console.log("FAIL no ROLE_INFO for " + id); }
-}
+eq("demand quote must name cert", V.quoteNamesCert("Employers want RHCSA holders", cert("rhcsa")), true);
+eq("demand quote without cert", V.quoteNamesCert("Employers want Linux skills", cert("rhcsa")), false);
 
 // --- edit distance ---
 eq("edit kitten sitting", L.editDistance("kitten", "sitting"), 3);
 
 console.log(fails === 0 ? "\nALL PASS" : "\n" + fails + " FAILED");
-

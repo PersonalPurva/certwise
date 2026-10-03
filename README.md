@@ -1,18 +1,17 @@
-# CertWise — find your role, then check if a certificate is worth it
+# CertWise — is this certificate genuine, and what is it worth?
 
 She Solves 3.0 · Team Ctrl Freaks · Track: Web & Software Development · Domain: Education
 
 **Live:** https://personalpurva.github.io/certwise/ · **Project log:** https://personalpurva.github.io/certwise/project-log.html
 
-First-year engineering students don't know which job role to aim for, and collect certificates that recruiters
-don't value, often pulled in by high-pressure ads. CertWise helps in one journey:
-**find my role → see what that role needs → check whether a certificate (or an ad) is worth it.**
-Market facts (prices, salaries, demand) refresh automatically every month, and no number reaches the site
-unless our software has found its exact quote on the source page.
+Students collect certificates but can't easily check two things: **is it genuine?** and **what is it worth in the
+job market?** Every issuer verifies certificates in its own way (Credly badges, coursera.org/verify links,
+NPTEL QR codes, Red Hat IDs...), copy-cat links can look official, and a perfectly genuine certificate can still
+be worth very little. CertWise answers both questions in one check, with a source for every fact.
 
 ## Run it
 
-- Easiest: double-click `index.html` (no server needed).
+- Easiest: double-click `index.html` (no server needed; the QR reader needs internet).
 - Or: `npm start` and open http://localhost:5173
 - Tests: `npm test`
 
@@ -20,17 +19,48 @@ unless our software has found its exact quote on the source page.
 
 | File | What it does |
 |---|---|
-| `index.html`, `style.css`, `app.js` | The page: Find my role · Check a certificate · Check an ad |
-| `project-log.html` | Everything we did, step by step: problem choice, research with proof, features, data refresh, corrections, tests |
-| `logic.js` | **The core** — typo-tolerant search, the five checks, verdict, alternatives, ad scanner, role quiz |
-| `data/certs.js` | 31 certificates with checkable facts (issuer, exam type, cost band, roles, eligibility, status) |
-| `data/roles.js` | The 8-question quiz and, per role, college subjects, skills to learn, mini project, research fallback |
+| `index.html`, `style.css`, `app.js` | The page: certificate name + verification link / ID / QR photo + issuer → two answers |
+| `logic.js` | **The core** — typo-tolerant search, the genuineness check, the market value score, higher-value picks |
+| `data/certs.js` | 31 certificates with checkable facts (issuer, exam type, price, eligibility, status) and proof links |
+| `data/verify.js` | How each issuer verifies certificates (14 official methods, with proof) and UGC's fake university list |
+| `data/roles.js` | The jobs a certificate leads to: demand and fresher salary, each with a source |
 | `data/live.js` | **Verified live facts** written by the monthly refresh (empty until the first run) |
 | `refresh/refresh.mjs` | Monthly refresh: an AI (free Gemini or paid Claude) reads trusted pages and returns facts with exact quotes |
 | `refresh/gemini.mjs`, `refresh/pages.js` | Free mode: calls Gemini and cuts long pages down to the parts that matter |
 | `refresh/verify.js` | Fact checker: fetches each page itself and keeps a fact only if the quote is really there |
-| `.github/workflows/refresh.yml` | Runs the refresh automatically on the 1st of every month and commits `data/live.js` |
-| `tests/test_logic.js` | 52 automated tests for the logic, the fact checker and the free-mode helpers |
+| `.github/workflows/refresh.yml` | Runs the refresh on the 1st of every month and commits `data/live.js` |
+| `tests/test_logic.js` | 65 automated tests; `tests/sample_qr.png` is a sample QR (fake NPTEL link) for the photo upload |
+| `project-log.html` | Everything we did, with the research and proof |
+
+## 1. Is it genuine? (`checkGenuine` in logic.js)
+
+| What we check | Result |
+|---|---|
+| The issuer is on UGC's list of 32 fake universities (Feb 2026) | **Fake university** |
+| The certificate type has no official record (workshop, participation, paid "internship") | **Can't be verified** |
+| The link is on the issuer's official verification site (e.g. credly.com/badges/..., coursera.org/verify/..., nptel.ac.in/noc/...) | **Official verification link** — open it as the last step |
+| The link is on the official site but not a verification page | **Official site, but not a verification page** |
+| The link copies the issuer's name or is a small typo of it (coursera-verify.com, credlly.com) — found with edit distance | **Look-alike website** — treat as fake |
+| Any other website | **Not the issuer's official site** |
+| An ID in the right format (Red Hat 123-456-789) | **ID looks right — confirm it** on the official page |
+
+The QR code can be read from a photo or screenshot of the certificate (jsQR, in the browser — nothing is uploaded).
+We never say "100% genuine": the browser can't read the issuer's records, so the final step is always the
+issuer's own page, which we link to.
+
+## 2. What is it worth? (`marketValue` in logic.js)
+
+Three checks, 0–2 points each:
+
+| Check | 2 | 1 | 0 |
+|---|---|---|---|
+| Recognition (who gives it) | Company / body that owns the field, or an IIT | Learning platform | Unknown training company |
+| Proof of skill (how you earn it) | Supervised exam | Online tests / projects | Attendance |
+| Job demand | ≥2 verified sources, or its jobs are "in demand" in cited reports | 1 source / "IT under pressure" / depends on the course | Not a credential employers ask for |
+
+Score = points ÷ 6 → 70%+ High, 45–69% Medium, below 45% Low market value. We also show the price (with proof),
+the fresher salary of the jobs it leads to (with sources), warnings (exam closed, needs work experience) and up to
+three higher-value certificates in the same field. If the genuineness check finds a fake, the market value is 0%.
 
 ## How the data stays current (and honest)
 
@@ -39,92 +69,36 @@ The refresh runs with **one** of two keys (if both are set, the free one is used
 | | Free: `GEMINI_API_KEY` | Paid: `ANTHROPIC_API_KEY` |
 |---|---|---|
 | Where facts come from | Our script downloads the trusted pages already listed in `data/certs.js` (`src`) and `data/roles.js` (`SOURCES`); Gemini (`gemini-3.8-flash`) copies out the facts | Claude (`claude-opus-5-5`) searches the web and reads pages, so it can find new sources |
-| What it updates | Price, status, salary, demand, skills | The same, plus sources that say a certificate is in demand |
-| Cost | ₹0 on the free tier (the script waits 15 s between calls to stay under the limits) | Pay per use |
+| What it updates | Price, status, salary, demand | The same, plus sources that say a certificate is in demand |
+| Cost | ₹0 on the free tier (the script waits 15 s between calls) | Pay per use |
 
-Free Gemini keys can't use Google Search, which is why the free mode re-reads our listed sources instead of
-searching. In free mode a certificate's "in demand" check stays *not scored yet* (it is left out of the score)
-rather than dropping to 0.
-
-1. **Read.** For each role (salary, demand, skills) and each certificate (price, status), the AI returns every
-   fact as `{value, url, quote}` with the quote copied word-for-word.
-2. **Fact check.** `verify.js` downloads the page itself, turns it into text, and keeps the fact only if
-   - the quote is found on the page (small differences like curly quotes, dashes and "Rs." vs "₹" are ignored), and
-   - every number in the value is inside the quote, and
-   - for demand facts, the quote actually names the certificate.
-3. **Publish.** Verified facts go to `data/live.js` with the date they were checked. Facts that fail are dropped
-   and listed in `refresh/report.json`. If this month's fact fails, last month's verified fact is kept.
-4. **Show.** The site shows each live fact with its quote, a link to the source and the check date. Until the
-   first refresh, the role report shows our earlier research, clearly labelled with its sources.
-
-### Proof for everything else
-
-The refresh covers numbers that change. Everything else also has a source:
-
-- **Certificates** (`data/certs.js`): every price, exam type and eligibility rule has a `src` list of official
-  pages (44 links in total). The site shows them under each verdict as **Proof**. Prices were checked by hand on
-  3 Oct 2026 (`CHECKED_ON`).
-- **Roles** (`data/roles.js`): every salary and demand line names its source from `SOURCES` (Naukri JobSpeak,
-  India Skills Report, TeamLease, salary guides), and the report links to it.
-- **Ad warning signs** (`logic.js`): the "job guarantee" rule links to the CCPA guidelines that ban such claims.
-- **Our advice is labelled.** College subjects, skills to learn, mini projects and the notes on some certificates
-  are our guidance, not facts. The site marks them *our advice* so nobody mistakes them for data.
-- **Known gaps:** Oracle's exam pages (education.oracle.com) were down for maintenance on 3 Oct 2026, so the two
-  Oracle prices are shown as "set per country / about USD 245" with the official link. Some pages (Kaggle,
-  HackerRank, CompTIA) only show text with JavaScript, so the refresh may drop their facts — that is the
-  checker working, not a bug.
-
-We chose this over RAG: CertWise asks fixed questions (salary for role X, price of certificate Y), so a scheduled,
-fact-checked refresh is cheaper and safer than generating answers live for every visitor. A free-text
-"Ask CertWise" chat would be the point to add RAG.
+Every fact comes back as `{value, url, quote}`. `verify.js` downloads the page itself and keeps the fact only if
+the quote is on the page and every number in the value is inside the quote. Failed facts are dropped and listed in
+`refresh/report.json`; last month's verified fact is kept.
 
 ### Set up the automatic refresh
 
-1. Get a key:
-   - **Free:** https://aistudio.google.com/api-keys → **Create API key**.
-   - **Paid:** https://console.anthropic.com → API Keys → Create Key (needs credits).
+1. Get a key — **free:** https://aistudio.google.com/api-keys → Create API key; **paid:** https://console.anthropic.com → API Keys.
 2. Add it as a repository secret named `GEMINI_API_KEY` or `ANTHROPIC_API_KEY`
-   (https://github.com/PersonalPurva/certwise/settings/secrets/actions → New repository secret).
-   Never put a key in code, a commit or a chat.
-3. Actions tab → "Monthly data refresh" → **Run workflow**. Type `data,aws-ccp` in the box for a small test run,
-   or leave it empty for everything. After that it runs by itself on the 1st of every month.
-4. `npm run refresh:dry` shows the questions (and, in free mode, the pages it will read) without calling any API.
-
-A full refresh makes one AI request per role and per certificate (about 32). With the paid key each request
-can also make up to 6 web searches and 6 page fetches, so check the cost of a two-topic run first.
-
-## How a certificate is scored (be ready to explain this)
-
-Five checks, 0–2 points each: who gives it · how you earn it · fits your role · in demand (verified sources) · cost.
-Score = points ÷ points possible. 70%+ = Worth it, 45–69% = Think twice, under 45% = Skip.
-Hard stops: needs work experience → "Not yet"; exam closed → "Not available"; wrong job → "Not for this role".
-Search typos are handled with **edit distance** (Levenshtein, dynamic programming).
-
-## Before the demo
-
-- [ ] Run the refresh once (at least for the roles and certificates in your demo) so live facts appear.
-- [ ] Look through `refresh/report.json` — dropped facts show the checker working; mention it to judges.
-- [ ] Fill the survey numbers on slide 5 of the deck.
-- [ ] Record a 60–90 second backup video of the golden path.
+   (https://github.com/PersonalPurva/certwise/settings/secrets/actions). Never put a key in code, a commit or a chat.
+3. Actions tab → "Monthly data refresh" → **Run workflow** (type `cloud,aws-ccp` for a small test run).
+4. `npm run refresh:dry` shows what would be asked, without calling any API.
 
 ## Demo script (about 2 minutes)
 
-1. **Find my role** → 8 questions → report: best match, college subjects, verified salary and demand with
-   quotes and links → "Use this role and check certificates".
-2. Type **AI tools workshop** → **Skip** (attendance-only), with better picks.
-3. **Check an ad** → Load example ad → **High-pressure ad**, 7 warning signs with the exact phrases.
-4. Tricky case: **secuirty plus** (typo) → still finds CompTIA Security+; **CISSP** → **Not yet**.
-5. Open `refresh/report.json`: "these facts were dropped because the quote wasn't on the page".
+1. **AWS badge link** example → *Official verification link* + **100% High market value**, cloud salary with sources.
+2. **Look-alike Coursera link** (coursera-verify.com) → *Look-alike website* → market value shown as 0% if fake.
+3. Upload `tests/sample_qr.png` with "NPTEL" typed → the QR is read → *Official verification link* (nptel.ac.in).
+4. **₹9 workshop** → *Can't be verified* + **0% Low market value** → higher-value picks (NPTEL first).
+5. **Fake university degree** → *Fake university* (UGC list, with proof).
 
 ## Answers to the obvious questions
 
-- **How do you avoid fake information?** Every number must come with a quote that our own code finds on the
-  source page; otherwise it is dropped. Students see the quote, the link and the date. Fixed facts (issuer,
-  exam type, eligibility) each have a Proof link, and our own guidance is labelled *our advice*.
-- **Where do the numbers on your slides come from?** See the proof table in `../Round1_slides_content.md` —
-  each number with the exact words on the source page.
-- **How is this different from Class Central / course reviews?** Reviews rate how enjoyable a course was;
-  we judge whether a certificate is valued for your role, and we decode the ad.
-- **How will it scale?** New certificate or role = one data row; the monthly refresh picks it up.
-- **Who pays?** Free for students; college placement cells could fund the small API cost. No commission from
-  course sellers — that independence is the point.
+- **Can you prove a certificate is genuine?** We prove the link points to the issuer's own record (or flag it as a
+  copy-cat) and check the UGC list; the last step is the issuer's page. We never claim "100% genuine".
+- **How is this different from the SIH25029 teams?** They check genuineness only (OCR / AI / blockchain on degree
+  documents). We add the market value score and cover any issuer's verification method, with no partnership needed.
+- **Why is a genuine certificate scored low?** Genuine isn't valuable: a real ₹9 workshop certificate has no exam and
+  no recognised issuer.
+- **Where do the numbers on your slides come from?** See the proof table in `../Round1_slides_content.md`.
+- **Who pays?** Free for students; placement cells could fund it. No commission from course sellers.

@@ -36,7 +36,7 @@ const only = args.includes("--only") ? args[args.indexOf("--only") + 1] : null;
 const ids = args.includes("--ids") ? args[args.indexOf("--ids") + 1].split(",") : null;
 const today = new Date().toISOString().slice(0, 10);
 
-const SYSTEM = `You research facts for CertWise, a free tool that helps first-year engineering students in India choose a job role and judge certificates.
+const SYSTEM = `You research facts for CertWise, a free tool that tells students in India whether a certificate is genuine and what it is worth in the job market.
 
 Use web_search to find sources and web_fetch to read them. Rules:
 - Report a fact only if you read it on a page you fetched. Never use memory, never estimate, never combine numbers from different pages into a new number.
@@ -76,7 +76,7 @@ Return:
 
 // ---------- free version: Gemini reads pages we downloaded ----------
 
-const FREE_RULES = `You extract facts for CertWise, a free tool that helps first-year engineering students in India choose a job role and judge certificates.
+const FREE_RULES = `You extract facts for CertWise, a free tool that tells students in India whether a certificate is genuine and what it is worth in the job market.
 
 Use ONLY the PAGES given below. Rules:
 - Report a fact only if it is written in one of the pages. Never use memory, never estimate, never combine numbers into a new number.
