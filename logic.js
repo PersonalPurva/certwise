@@ -1,6 +1,7 @@
 // CertWise - core logic (no HTML in this file)
 // 1. findCert()     : match what the user typed to a certificate (handles typos)
 // 2. checkGenuine() : is the certificate real? (official verification link / ID, UGC fake-university list)
+//    checkFile()    : is the uploaded file an allowed type and size?   pickLink(): best link inside a PDF
 // 3. marketValue()  : market value score from three checks (recognition, proof of skill, job demand)
 // 4. betterValue()  : higher-value certificates in the same field
 
@@ -152,6 +153,48 @@ function matchFakeUni(name, fakeUnis) {
     }
   }
   return null;
+}
+
+// ---------- the uploaded certificate file ----------
+
+const FILE_TYPES = { "image/png": "image", "image/jpeg": "image", "image/webp": "image", "application/pdf": "pdf" };
+const FILE_EXTS = { png: "image", jpg: "image", jpeg: "image", webp: "image", pdf: "pdf" };
+
+// is this file allowed? returns { ok: true, kind: "image" or "pdf" } or { ok: false, why: "..." }
+function checkFile(name, type, sizeBytes, maxMb) {
+  const ext = name.toLowerCase().split(".").pop();
+  const kind = FILE_TYPES[type] || FILE_EXTS[ext];
+  if (!kind) return { ok: false, why: "Only PNG, JPG or WEBP images and PDF files are accepted." };
+  if (sizeBytes === 0) return { ok: false, why: "This file is empty." };
+  const mb = sizeBytes / (1024 * 1024);
+  if (mb > maxMb) {
+    return { ok: false, why: "This file is " + mb.toFixed(1) + " MB - the limit is " + maxMb + " MB." };
+  }
+  return { ok: true, kind: kind };
+}
+
+// a PDF can hold several links: pick the one to check.
+// best = an official verification page, then any official site, then a look-alike (so it gets flagged)
+function pickLink(links, methods) {
+  let best = null, bestScore = -1;
+  for (const raw of links) {
+    const link = raw.trim().replace(/[.,;:)\]]+$/, "");
+    const host = hostOf(link);
+    if (!host) continue;
+    let score = 0;
+    for (const key in methods) {
+      for (const d of methods[key].domains) {
+        if (onDomain(host, d)) {
+          const onVerifyPage = methods[key].path !== "" && pathOf(link).includes(methods[key].path);
+          score = Math.max(score, onVerifyPage ? 3 : 2);
+        } else if (looksLike(host, d)) {
+          score = Math.max(score, 1);
+        }
+      }
+    }
+    if (score > bestScore) { best = link; bestScore = score; }
+  }
+  return best;
 }
 
 // input = { link: "...", issuer: "..." } (both optional)
@@ -363,5 +406,5 @@ function betterValue(cert, certs, roles, roleInfo, live, howMany) {
 
 if (typeof module !== "undefined") {
   module.exports = { normalize, editDistance, rankCerts, findCert, hostOf, looksLike, matchFakeUni,
-                     checkGenuine, demandSources, marketValue, betterValue };
+                     checkFile, pickLink, checkGenuine, demandSources, marketValue, betterValue };
 }

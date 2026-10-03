@@ -23,7 +23,7 @@
         <tr><th>Solution</th><td>CertWise: one free check for any certificate - <b>is it genuine?</b> and <b>what is it worth?</b> - with a source for every fact.</td></tr>
         <tr><th>Live app</th><td><a href="index.html">Open CertWise</a> · Code: <a href="https://github.com/PersonalPurva/certwise">github.com/PersonalPurva/certwise</a></td></tr>
         <tr><th>Rounds</th><td>Round 1 - idea + 6-slide PPT, due 3 Oct 2026, 11:59 PM · Round 2 - prototype + GitHub + 10-minute demo, 5 Oct · Round 3 - 5-hour build at PCCOE, 9 Oct</td></tr>
-        <tr><th>Status</th><td>Live on GitHub Pages · 31 certificates · 14 official verification methods · UGC fake-university list · 65 automated tests passing · Round 1 deck ready · monthly refresh built, waiting for a key</td></tr>
+        <tr><th>Status</th><td>Live on GitHub Pages · 31 certificates · 14 official verification methods · UGC fake-university list · certificate upload (image or PDF, 5 MB limit) · 79 automated tests passing · Round 1 deck ready · monthly refresh built, waiting for a key</td></tr>
       </table>
       <p class="small">Jump to: <a href="#history">History</a> · <a href="#research">Research</a> · <a href="#exists">Does it already exist?</a> · <a href="#issuers">How issuers verify</a> · <a href="#built">What we built</a> · <a href="#refresh">Data refresh</a> · <a href="#testing">Testing</a> · <a href="#next">What's next</a></p>
     </section>
@@ -41,6 +41,10 @@
           <td>Deep research: how every issuer verifies certificates, the UGC fake-university list, data sources for market value, privacy law, and close existing tools (CertForge, SEEK Pass, Reclaim Protocol, TrueDoc, LegitDoc, Certopus, CertifyMe).</td></tr>
         <tr><td>3 Oct, ~11:00 AM</td><td>Change everything we have made, and remove everything previous.</td>
           <td>Rebuilt the app (genuineness check + market value score + QR from a photo), the 6-slide deck, the slide notes, the README and this log. The earlier version is removed (it stays only in the GitHub commit history).</td></tr>
+        <tr><td>3 Oct, ~1:00 PM</td><td>Add more design to the prototype.</td>
+          <td>New look in the deck's emerald and gold colours: hero header with live numbers, a guided 3-step form with icons and example chips, a drag-and-drop area for the certificate file, status blocks with icons, a ring gauge for the market value score, point dots for each check, job cards with salary, and a phone layout. The checks themselves did not change.</td></tr>
+        <tr><td>3 Oct, ~1:20 PM</td><td>The upload should have a size limit and accept more types, like PDF.</td>
+          <td>Upload now accepts PNG, JPG, WEBP and PDF, up to 5 MB; other types and bigger files are refused with a clear message. PDFs are scanned for a QR code on the first 3 pages and for clickable or printed links (pdf.js). 79 tests. Deck and notes updated to match.</td></tr>
       </table>
     </section>
 
@@ -127,7 +131,7 @@
       <h4>Input</h4>
       <ul>
         <li>Certificate name (typos are fine - <b>edit distance</b>, Levenshtein, dynamic programming).</li>
-        <li>Verification link or certificate ID - or a <b>photo / screenshot</b> of the certificate: its QR code is read in the browser (jsQR). Nothing is uploaded.</li>
+        <li>Verification link or certificate ID - or the <b>certificate file</b>: PNG, JPG, WEBP or PDF, up to 5 MB. Images are scanned for a QR code (jsQR); PDFs for a QR code on the first 3 pages and for clickable or printed links (pdf.js). Other file types and bigger files are refused with a clear message. Everything runs in the browser - the file is never uploaded.</li>
         <li>Optional: the college / institute that issued it.</li>
       </ul>
       <h4>Answer 1 - Is it genuine?</h4>
@@ -163,9 +167,10 @@
     <section class="box" id="testing">
       <h2>Testing</h2>
       <ul>
-        <li><b>65 automated tests</b> (<code>npm test</code>): search and typos, every genuineness result (official link, wrong page, look-alike, typo domain, wrong issuer, ID formats, no record, fake university with typos, real university not flagged), market value scores, higher-value picks, the fact checker and the free-refresh helpers.</li>
-        <li>Browser checks of all five examples, plus a QR test: a sample QR image (<code>tests/sample_qr.png</code>) was read and gave "Official verification link". No console errors.</li>
-        <li>Fixed while testing: "Commercial University Ltd." wasn't matched because of the full stop; a fake certificate showed a high market value - it now shows 0% if fake.</li>
+        <li><b>79 automated tests</b> (<code>npm test</code>): search and typos, every genuineness result (official link, wrong page, look-alike, typo domain, wrong issuer, ID formats, no record, fake university with typos, real university not flagged), the upload rules (allowed types, 5 MB limit, empty file), choosing the right link inside a PDF, market value scores, higher-value picks, the fact checker and the free-refresh helpers.</li>
+        <li>Browser checks of all five examples at laptop and phone widths, with no console errors.</li>
+        <li>Upload checks with sample files in <code>tests/</code>: a PNG with a QR code, a PDF with a QR code and a PDF with only a printed link all gave "Official verification link"; a 6 MB file, a .docx file and a damaged PDF were each refused with the right message.</li>
+        <li>Fixed while testing: "Commercial University Ltd." wasn't matched because of the full stop; a fake certificate showed a high market value - it now shows 0% if fake; PDF pages didn't finish drawing when the browser tab was in the background - the page is now drawn in one go, with a 6-second limit.</li>
         <li>The deck passed file validation and every slide was checked as an image.</li>
       </ul>
     </section>
@@ -180,7 +185,7 @@
 
     <section class="box">
       <h2>Tech used</h2>
-      <p>HTML, CSS, JavaScript (no framework, no backend) · jsQR for reading QR codes in the browser · Node.js for tests and the refresh script · Gemini (free) or Claude API for the monthly refresh · GitHub Actions · GitHub Pages (₹0 server cost).</p>
+      <p>HTML, CSS, JavaScript (no framework, no backend) · jsQR for reading QR codes and pdf.js for reading PDFs, both in the browser · Node.js for tests and the refresh script · Gemini (free) or Claude API for the monthly refresh · GitHub Actions · GitHub Pages (₹0 server cost).</p>
     </section>
 
     <section class="box" id="next">
@@ -189,7 +194,7 @@
         <li>Fill in our own survey numbers on slide 5 and submit Round 1 (3 Oct, 11:59 PM).</li>
         <li>Add a free Gemini key as the <code>GEMINI_API_KEY</code> repository secret and run a small test refresh.</li>
         <li>Record a 60-90 second backup video of the demo for Round 2 (5 Oct).</li>
-        <li>Later: more issuers and certificates; read QR codes from PDF certificates; a bulk check for placement cells.</li>
+        <li>Later: more issuers and certificates; a bulk check for placement cells.</li>
       </ul>
     </section>
 

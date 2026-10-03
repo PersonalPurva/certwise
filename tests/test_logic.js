@@ -69,6 +69,25 @@ eq("hostOf an ID", L.hostOf("140-123-456"), null);
 eq("subdomain is not look-alike", L.looksLike("verify.comptia.org", "comptia.org"), false);
 eq("look-alike with brand", L.looksLike("coursera-certificates.net", "coursera.org"), true);
 
+// --- uploaded file: allowed types and size limit ---
+const MB = 1024 * 1024;
+eq("png accepted", L.checkFile("cert.png", "image/png", 1 * MB, 5).kind, "image");
+eq("jpg accepted", L.checkFile("photo.JPG", "image/jpeg", 2 * MB, 5).kind, "image");
+eq("pdf accepted", L.checkFile("certificate.pdf", "application/pdf", 3 * MB, 5).kind, "pdf");
+eq("pdf by extension when type is missing", L.checkFile("certificate.pdf", "", 3 * MB, 5).kind, "pdf");
+eq("too big rejected", L.checkFile("big.pdf", "application/pdf", 7.2 * MB, 5).ok, false);
+eq("too big message", L.checkFile("big.pdf", "application/pdf", 7.2 * MB, 5).why, "This file is 7.2 MB - the limit is 5 MB.");
+eq("exactly at the limit accepted", L.checkFile("ok.png", "image/png", 5 * MB, 5).ok, true);
+eq("word file rejected", L.checkFile("cert.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", 1 * MB, 5).ok, false);
+eq("gif rejected", L.checkFile("anim.gif", "image/gif", 1 * MB, 5).ok, false);
+eq("empty file rejected", L.checkFile("empty.pdf", "application/pdf", 0, 5).ok, false);
+
+// --- links found inside a PDF ---
+eq("verify page wins", L.pickLink(["https://www.coursera.org/learn/x", "https://coursera.org/verify/ABC123.", "https://example.com"], VERIFY_METHODS), "https://coursera.org/verify/ABC123");
+eq("official site over others", L.pickLink(["https://example.com/a", "https://www.isc2.org/about"], VERIFY_METHODS), "https://www.isc2.org/about");
+eq("look-alike kept so it gets flagged", L.pickLink(["https://example.com/a", "https://coursera-verify.com/verify/1"], VERIFY_METHODS), "https://coursera-verify.com/verify/1");
+eq("no links", L.pickLink(["not a link", "123"], VERIFY_METHODS), null);
+
 // --- market value ---
 const mv = (id, live) => L.marketValue(cert(id), ROLES, ROLE_INFO, live || { certs: {}, roles: {} });
 let r = mv("workshop"); eq("workshop value", r.percent, 0); eq("workshop band", r.band, "Low market value");

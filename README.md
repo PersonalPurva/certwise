@@ -19,7 +19,7 @@ be worth very little. CertWise answers both questions in one check, with a sourc
 
 | File | What it does |
 |---|---|
-| `index.html`, `style.css`, `app.js` | The page: certificate name + verification link / ID / QR photo + issuer → two answers |
+| `index.html`, `style.css`, `app.js` | The page: certificate name + verification link / ID / certificate file (photo or PDF) + issuer → two answers |
 | `logic.js` | **The core** — typo-tolerant search, the genuineness check, the market value score, higher-value picks |
 | `data/certs.js` | 31 certificates with checkable facts (issuer, exam type, price, eligibility, status) and proof links |
 | `data/verify.js` | How each issuer verifies certificates (14 official methods, with proof) and UGC's fake university list |
@@ -29,7 +29,7 @@ be worth very little. CertWise answers both questions in one check, with a sourc
 | `refresh/gemini.mjs`, `refresh/pages.js` | Free mode: calls Gemini and cuts long pages down to the parts that matter |
 | `refresh/verify.js` | Fact checker: fetches each page itself and keeps a fact only if the quote is really there |
 | `.github/workflows/refresh.yml` | Runs the refresh on the 1st of every month and commits `data/live.js` |
-| `tests/test_logic.js` | 65 automated tests; `tests/sample_qr.png` is a sample QR (fake NPTEL link) for the photo upload |
+| `tests/test_logic.js` | 79 automated tests; `tests/sample_qr.png`, `sample_qr.pdf` and `sample_link.pdf` are sample files (fake links) for trying the upload |
 | `project-log.html` | Everything we did, with the research and proof |
 
 ## 1. Is it genuine? (`checkGenuine` in logic.js)
@@ -44,7 +44,7 @@ be worth very little. CertWise answers both questions in one check, with a sourc
 | Any other website | **Not the issuer's official site** |
 | An ID in the right format (Red Hat 123-456-789) | **ID looks right — confirm it** on the official page |
 
-The QR code can be read from a photo or screenshot of the certificate (jsQR, in the browser — nothing is uploaded).
+**Upload a certificate file** instead of typing the link: PNG, JPG, WEBP or PDF, up to 5 MB (other types and bigger files are refused with a clear message — `checkFile` in logic.js). Images are scanned for a QR code (jsQR). PDFs are scanned for a QR code on the first 3 pages and for clickable or printed links (pdf.js, loaded only when a PDF is chosen); `pickLink` picks the official verification link if there is one. Everything runs in the browser — the file is never uploaded.
 We never say "100% genuine": the browser can't read the issuer's records, so the final step is always the
 issuer's own page, which we link to.
 
@@ -88,7 +88,7 @@ the quote is on the page and every number in the value is inside the quote. Fail
 
 1. **AWS badge link** example → *Official verification link* + **100% High market value**, cloud salary with sources.
 2. **Look-alike Coursera link** (coursera-verify.com) → *Look-alike website* → market value shown as 0% if fake.
-3. Upload `tests/sample_qr.png` with "NPTEL" typed → the QR is read → *Official verification link* (nptel.ac.in).
+3. Type "NPTEL" and drop `tests/sample_qr.pdf` (or `sample_qr.png`) → the QR is read → *Official verification link* (nptel.ac.in). Try a file over 5 MB or a .docx → refused with a clear message.
 4. **₹9 workshop** → *Can't be verified* + **0% Low market value** → higher-value picks (NPTEL first).
 5. **Fake university degree** → *Fake university* (UGC list, with proof).
 
