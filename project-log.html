@@ -25,7 +25,7 @@
         <tr><th>Rounds</th><td>Round 1 - idea + 6-slide PPT, due 3 Oct 2026, 11:59 PM · Round 2 - prototype + GitHub + 10-minute demo, 5 Oct · Round 3 - 5-hour build at PCCOE, 9 Oct</td></tr>
         <tr><th>Status</th><td>Live on GitHub Pages (3 features, 31 certificates, 6 roles) · 52 automated tests passing · Round 1 deck ready · Monthly refresh built (free Gemini key or paid Claude key) - waiting for a key</td></tr>
       </table>
-      <p class="small">Jump to: <a href="#history">Full history</a> · <a href="#ideas">Ideas we considered</a> · <a href="#research">Research</a> · <a href="#built">What we built</a> · <a href="#refresh">Data refresh</a> · <a href="#proof">Proof</a> · <a href="#testing">Testing</a> · <a href="#next">What's next</a></p>
+      <p class="small">Jump to: <a href="#history">Full history</a> · <a href="#ideas">Ideas we considered</a> · <a href="#research">Research</a> · <a href="#exists">Does it already exist?</a> · <a href="#built">What we built</a> · <a href="#refresh">Data refresh</a> · <a href="#proof">Proof</a> · <a href="#testing">Testing</a> · <a href="#next">What's next</a></p>
     </section>
 
     <section class="box" id="history">
@@ -79,6 +79,8 @@
           <td>Added a free mode using a Google Gemini key: our script downloads the trusted pages, Gemini copies out the facts, the quote checker still verifies each one. Free Gemini keys can't search Google, so this mode re-reads our listed sources instead of searching the web. Tested the whole flow with a fake Gemini. 52 tests.</td></tr>
         <tr><td>3 Oct, 8:20 AM</td><td>Store everything from this project in this log, and update it every time something changes.</td>
           <td>Added this full history and the list of every idea we considered. From now on each change adds a row here.</td></tr>
+        <tr><td>3 Oct, 10:24 AM</td><td>Teammates are building a platform that checks a certificate's <b>genuineness</b> and <b>market value score</b> - research whether this (and our project) already exists.</td>
+          <td>Deep check of government systems, verification companies, salary/value tools, SIH 2025 statements and hackathon projects. Genuineness checking is crowded (DigiLocker, NQR, UGC list, verification firms, SIH25029 with 142 team submissions). Value tools exist only in pieces, mostly US data, with no verdict. Nothing combines both for Indian students. Details in <a href="#exists">Step 3b</a>.</td></tr>
       </table>
     </section>
 
@@ -138,6 +140,45 @@
         <tr><td><a href="https://www.futureskillsprime.in/">NASSCOM FutureSkills Prime</a>, <a href="https://neat.aicte-india.org/">AICTE NEAT</a></td><td>Vetted course catalogues</td><td>No verdict on one certificate</td></tr>
         <tr><td><b>CertWise (ours)</b></td><td><b>Role quiz + certificate verdict + ad decoder</b></td><td><b>Built for Indian first-years, free, no sales</b></td></tr>
       </table>
+    </section>
+
+    <section class="box" id="exists">
+      <h2>Step 3b - Deep check: does a "genuine + market value" platform already exist? (3 Oct)</h2>
+      <p>Our teammates proposed a platform that checks if a certificate is <b>genuine</b> and gives it a <b>market value score</b>. We checked both halves, and our own CertWise idea, against real products, government systems and hackathon projects.</p>
+
+      <h4>1. Checking if a certificate is genuine - already exists, and crowded</h4>
+      <table>
+        <tr><th>Existing</th><th>What it does</th></tr>
+        <tr><td><a href="https://nad.digilocker.gov.in/">DigiLocker - National Academic Depository</a></td><td>Government store of degrees, mark sheets and diplomas; employers verify a record with the student's permission.</td></tr>
+        <tr><td><a href="https://nqr.gov.in/aboutus">NCVET National Qualifications Register</a></td><td>Official public record of all NSQF-aligned qualifications and their awarding bodies.</td></tr>
+        <tr><td><a href="https://university.careers360.com/articles/ugc-fake-universities-in-india-2026">UGC fake universities list</a></td><td>32 institutions not allowed to award degrees (February 2026 list).</td></tr>
+        <tr><td><a href="https://gverify.annauniv.edu/">University portals</a> (e.g. Anna University)</td><td>Genuineness verification of their own graduates' certificates.</td></tr>
+        <tr><td><a href="https://work.icredify.com/degree-certificate-verification.html">iCredify</a>, <a href="https://in.springverify.com/screenings/education-verification/">SpringVerify</a></td><td>Paid education verification for employers.</td></tr>
+        <tr><td>Issuer verification (<a href="https://info.credly.com/product/labor-market">Credly</a> badges, QR certificates such as <a href="https://www.truecred.site/">TrueCred</a>)</td><td>Each certificate has a link or QR code that proves it was really issued.</td></tr>
+        <tr><td>SIH 2025 <a href="https://sih-nav.vercel.app/">SIH25029 "Authenticity Validator for Academia"</a> (Govt of Jharkhand)</td><td><b>142 team submissions</b> - OCR, AI forgery detection and blockchain. Many similar projects are public on Devpost and Devfolio (e.g. <a href="https://devfolio.co/projects/academia-authenticity-validator-91fa">Academia Authenticity Validator</a>, <a href="https://devpost.com/software/certichain">CertiChain</a>, <a href="https://devpost.com/software/certificate-verification">Certificate Verification</a>).</td></tr>
+      </table>
+      <p class="small"><b>Important:</b> fake certificates are mainly a problem for <i>employers and universities</i> (forged degrees, fake universities). For a first-year student the problem is different: a ₹9 workshop certificate is <b>completely genuine</b> - it just has little value.</p>
+
+      <h4>2. Scoring a certificate's market value - only pieces exist</h4>
+      <table>
+        <tr><th>Existing</th><th>What it does</th><th>What's missing</th></tr>
+        <tr><td><a href="https://info.credly.com/product/labor-market">Credly Labor Market Insights</a></td><td>For a badge's skills: live job postings, salary ranges, employers, locations</td><td>Only Credly badges; data mainly U.S.; no score or verdict</td></tr>
+        <tr><td><a href="https://crucialexams.com/tools/certification-salary-finder">CrucialExams Certification Salary Estimator</a></td><td>Salary for jobs asking for an IT certification, from daily-scraped job posts</td><td>"only provides salary estimates in the USA"; no verdict</td></tr>
+        <tr><td><a href="https://www.payscale.com/research/US/Certification">Payscale certification salaries</a></td><td>Pay by certification</td><td>U.S. data; no verdict</td></tr>
+        <tr><td>ROI calculators (<a href="https://unihackers.com/tools/certification-roi">UniHackers</a>, <a href="https://jobhopi.com/tools/certification-roi-calculator">JobHOPi</a>)</td><td>Salary-uplift maths</td><td>Foreign salaries; for working professionals</td></tr>
+        <tr><td><a href="https://edsurge.com/news/2019-09-24-there-are-700k-credentials-and-counting-which-ones-are-quality">Credential Engine</a></td><td>U.S. registry of credentials</td><td>Its director: "We're not here to say which is a better choice" - no ranking</td></tr>
+        <tr><td><a href="https://collegevidya.com/courses/chatgpt-certification-online/worth-it/">College Vidya "worth it" pages</a></td><td>Says a course is worth it</td><td>Promotional; earns through admissions and referrals - not independent</td></tr>
+        <tr><td><a href="https://scam.courses/blog/course-red-flags-2026">scam.courses</a></td><td>Red-flag guide for "guru" courses</td><td>No score; not about IT certificates or Indian students</td></tr>
+      </table>
+
+      <h4>3. Result</h4>
+      <ul>
+        <li><b>Genuine + market value for Indian students in one place: not found.</b> The closest is Credly (verified badge + job data), but it only covers its own badges, uses mostly U.S. data and gives no score.</li>
+        <li><b>Genuineness on its own is crowded</b> - 142 SIH teams and many public hackathon projects already built it, and government systems cover degrees.</li>
+        <li><b>Our CertWise idea</b> (role quiz + certificate verdict + ad check): still no direct match found. Note: SIH25094 "One-Stop Personalized Career &amp; Education Advisor" hit the 500-submission cap, so a general career advisor is crowded - our pitch should lead with the certificate verdict, with the role quiz as the first step.</li>
+        <li><b>Suggestion:</b> merge the two ideas instead of building two platforms. Our score already is a market value score (issuer, exam, role fit, verified demand, cost). Add genuineness as an "Is it real?" check: is the issuer on an official list (UGC fake list, NCVET NQR, AICTE), and a link to the issuer's own verification page - without rebuilding blockchain verification.</li>
+      </ul>
+      <p class="small">Limits: "not found" means our searches of the web, SIH 2025 lists, Devpost/Devfolio and the Play Store didn't turn it up - not proof that nothing exists anywhere.</p>
     </section>
 
     <section class="box" id="built">
