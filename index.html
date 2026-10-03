@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CertWise - Is this certificate worth it?</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <h1>CertWise</h1>
+    <p>Find your role, then check if a certificate is worth your time and money. Made for first-year engineering students.</p>
+  </header>
+
+  <main>
+
+    <!-- step 1: role -->
+    <section class="box">
+      <label for="role"><b>1. What job are you aiming for?</b></label>
+      <select id="role"></select>
+      <p class="small">Not sure? <a href="#" id="goQuiz">Take the 2-minute "Find my role" quiz</a>.</p>
+    </section>
+
+    <!-- step 2: tabs -->
+    <section class="box">
+      <div class="tabs">
+        <button id="tabQuiz" class="tab">Find my role</button>
+        <button id="tabCert" class="tab active">Check a certificate</button>
+        <button id="tabAd" class="tab">Check an ad</button>
+      </div>
+
+      <!-- role quiz -->
+      <div id="paneQuiz" class="hidden">
+        <div id="quizBox">
+          <p><b>Answer 8 quick questions.</b> There are no wrong answers - pick what feels most like you.</p>
+          <div id="quizForm"></div>
+          <div class="row">
+            <button id="quizBtn" class="primary">Show my report</button>
+          </div>
+        </div>
+        <div id="quizResult"></div>
+      </div>
+
+      <!-- certificate check -->
+      <div id="paneCert">
+        <label for="certInput"><b>2. Type the certificate or course name</b></label>
+        <div class="row">
+          <input id="certInput" type="text" placeholder="e.g. RHCSA, Security+, AI tools workshop, NPTEL Java" autocomplete="off">
+          <button id="certBtn" class="primary">Check</button>
+        </div>
+        <p class="small">Try:
+          <a href="#" class="try">AI tools workshop</a> ·
+          <a href="#" class="try">secuirty plus</a> ·
+          <a href="#" class="try">CISSP</a> ·
+          <a href="#" class="try">TensorFlow certificate</a> ·
+          <a href="#" class="try">NPTEL</a>
+        </p>
+        <div id="certResult"></div>
+      </div>
+
+      <!-- ad check -->
+      <div id="paneAd" class="hidden">
+        <label for="adInput"><b>2. Paste the ad, post or WhatsApp message</b></label>
+        <textarea id="adInput" rows="6" placeholder="Paste the text of the ad here..."></textarea>
+        <div class="row">
+          <button id="adBtn" class="primary">Scan ad</button>
+          <button id="adExample">Load example ad</button>
+        </div>
+        <div id="adResult"></div>
+      </div>
+    </section>
+
+    <!-- how we score -->
+    <section class="box">
+      <h2>How we score</h2>
+      <p>Every certificate gets 0, 1 or 2 points on five checks. Nothing is hidden.</p>
+      <table class="how">
+        <tr><th>Check</th><th>2 points</th><th>1 point</th><th>0 points</th></tr>
+        <tr><td>Who gives it</td><td>The company / body that owns the field, or an IIT</td><td>Known learning platform</td><td>Unknown training company</td></tr>
+        <tr><td>How you earn it</td><td>Supervised exam</td><td>Online tests or projects</td><td>Just attending</td></tr>
+        <tr><td>Fits your role</td><td>Made for your job</td><td>Depends on topic</td><td>Different job</td></tr>
+        <tr><td>In demand (verified sources)</td><td>2 or more sources</td><td>1 source</td><td>None</td></tr>
+        <tr><td>Cost</td><td>Free or under Rs 2,000</td><td>Rs 2,000 - 10,000</td><td>Above Rs 10,000</td></tr>
+      </table>
+      <p class="small">70% or more = Worth it · 45-69% = Think twice · below 45% = Skip.
+        Certificates that need work experience show "Not yet"; closed ones show "Not available".</p>
+      <p class="small"><b>No made-up facts:</b> prices, salaries and demand are refreshed every month. Our software
+        fetches each source page itself and keeps a fact only if its exact quote is on that page - every fact
+        is shown with its quote, a link and the date it was checked. Every other fact (issuer, exam type, price,
+        eligibility, salary, demand) has a <b>Proof</b> link; anything marked <i>our advice</i> is our guidance, not a fact.</p>
+      <p class="small" id="dataInfo"></p>
+    </section>
+
+  </main>
+
+  <footer>
+    <p id="teamLine"></p>
+    <p class="small">CertWise does not sell any course and takes no commission. Prices change - always check the official page.</p>
+    <p class="small"><a href="project-log.html">Project log - how we built this</a></p>
+  </footer>
+
+  <script src="data/certs.js"></script>
+  <script src="data/live.js"></script>
+  <script src="data/roles.js"></script>
+  <script src="logic.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

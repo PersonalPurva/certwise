@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CertWise - Project log</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <h1>CertWise - Project log</h1>
+    <p>Everything we did, step by step, with the reason for each choice. Team Ctrl Freaks · She Solves 3.0</p>
+  </header>
+
+  <main>
+
+    <section class="box">
+      <h2>At a glance</h2>
+      <table>
+        <tr><th>Hackathon</th><td>She Solves 3.0 (PCCOE ACM-W) · Track: Web &amp; Software Development · Domain: Education</td></tr>
+        <tr><th>Problem</th><td>First-year engineering students don't know which job role to aim for or which certificates matter, so they collect many low-value ones - often pulled in by pressure-selling ads.</td></tr>
+        <tr><th>Solution</th><td>CertWise: a free web app - find your role, see what it needs, then check if a certificate (or an ad) is worth it.</td></tr>
+        <tr><th>Live app</th><td><a href="index.html">Open CertWise</a> · Code: <a href="https://github.com/PersonalPurva/certwise">github.com/PersonalPurva/certwise</a></td></tr>
+        <tr><th>Rounds</th><td>Round 1 - idea + 6-slide PPT, due 3 Oct 2026 · Round 2 - prototype + GitHub + 10-minute demo, 5 Oct · Round 3 - 5-hour build at PCCOE, 9 Oct</td></tr>
+        <tr><th>Status</th><td>Prototype working (3 features, 31 certificates, 6 roles) · 46 automated tests passing · Round 1 deck ready</td></tr>
+      </table>
+    </section>
+
+    <section class="box">
+      <h2>Step 1 - Choosing the problem</h2>
+      <ul>
+        <li>We first looked at many ideas across Health, Safety, Women Empowerment and Education, and checked each one against Smart India Hackathon problem lists and other hackathons.</li>
+        <li>For every idea we asked three questions: <b>is it a real problem</b>, <b>do existing solutions already solve it</b>, and <b>can we build a working demo in time</b>.</li>
+        <li>We chose our own problem because we live it: in first year, students are told to "do certificates", see ads for ₹9 workshops, and don't know which ones employers value.</li>
+        <li>Later we added <b>role guidance</b>: students are also confused about which job role to pick, and you can't judge a certificate without knowing the role.</li>
+      </ul>
+    </section>
+
+    <section class="box">
+      <h2>Step 2 - Research: is this a real problem?</h2>
+      <p>Every number below was checked on its source page. The exact words are in the "Proof" column.</p>
+      <table>
+        <tr><th>Finding</th><th>Proof (words on the page)</th><th>Source</th></tr>
+        <tr><td>96% of Indian students believe a certificate will help them get a job</td>
+          <td class="quote">"96% Indian students believe professional certification will land them a job: Coursera survey"</td>
+          <td><a href="https://news.careers360.com/96-percent-indian-students-believe-professional-certification-will-land-them-job-coursera-survey">Careers360</a></td></tr>
+        <tr><td>85% of Indian employers value professional certificates when hiring</td>
+          <td class="quote">"employers in India place a higher value on professional certificates (85%) when making hiring decisions"</td>
+          <td><a href="https://news.careers360.com/96-percent-indian-students-believe-professional-certification-will-land-them-job-coursera-survey">Careers360</a></td></tr>
+        <tr><td>Employers value some certificates far more than others</td>
+          <td class="quote">"A 2026 survey of 200+ Indian hiring managers found that IIT/NPTEL certificates rank highest overall for employer recognition, ahead of Coursera certificates"</td>
+          <td><a href="https://gradright.com/coursera-vs-swayam-vs-gradright-which-free-courses-do-indian-employers-actually-value/">GradRight</a></td></tr>
+        <tr><td>26% of edtech ads promise guaranteed success</td>
+          <td class="quote">"26 percent of ads make promises guaranteeing success in the form of improving marks, helping students become a topper"</td>
+          <td><a href="https://www.storyboard18.com/how-it-works/edtech-advertising-ascis-report-on-bad-practices-in-edtech-ads-points-to-deeper-issues-4842.htm">Storyboard18 (ASCI report)</a></td></tr>
+        <tr><td>31 of 100 edtech ads made superlative claims</td>
+          <td class="quote">"31 out of 100 edtech ads made superlative claims: ASCI report"</td>
+          <td><a href="https://www.storyboard18.com/how-it-works/31-out-of-100-edtech-ads-made-superlative-claims-asci-report-12731.htm">Storyboard18</a></td></tr>
+        <tr><td>AI/ML hiring grew while IT hiring stayed under pressure (April 2026)</td>
+          <td class="quote">"AI/ML hiring maintained strong growth at +32%" · headline: "Banking and IT Sectors Remain Under Pressure"</td>
+          <td><a href="https://www.naukri.com/blog/naukri-jobspeak-april-26-growth-in-insurance-leads-the-pack-banking-and-it-sectors/">Naukri JobSpeak</a></td></tr>
+        <tr><td>₹9 "AI tools" workshops come with a certificate</td>
+          <td class="quote">"₹929 ₹9 ONE-TIME · CERTIFICATE INCLUDED" (seen 3 Oct 2026)</td>
+          <td><a href="https://be10x.in/">Workshop page</a> (example of the price model only)</td></tr>
+      </table>
+    </section>
+
+    <section class="box">
+      <h2>Step 3 - Existing solutions and the gap</h2>
+      <table>
+        <tr><th>Tool</th><th>What it does</th><th>What's missing</th></tr>
+        <tr><td><a href="https://www.classcentral.com/">Class Central</a></td><td>Search and reviews of online courses</td><td>Rates learning, not hiring value</td></tr>
+        <tr><td><a href="https://roadmap.sh/">roadmap.sh</a></td><td>Skill roadmaps for each tech role</td><td>Doesn't judge certificates</td></tr>
+        <tr><td>Certification ROI calculators</td><td>Salary-uplift maths</td><td>Foreign salaries; made for working professionals</td></tr>
+        <tr><td><a href="https://www.credly.com/">Credly</a></td><td>Verifies a badge is genuine</td><td>Not whether it's worth having</td></tr>
+        <tr><td><a href="https://www.futureskillsprime.in/">NASSCOM FutureSkills Prime</a>, <a href="https://neat.aicte-india.org/">AICTE NEAT</a></td><td>Vetted course catalogues</td><td>No verdict on one certificate</td></tr>
+        <tr><td><b>CertWise (ours)</b></td><td><b>Role quiz + certificate verdict + ad decoder</b></td><td><b>Built for Indian first-years, free, no sales</b></td></tr>
+      </table>
+    </section>
+
+    <section class="box">
+      <h2>Step 4 - What we built</h2>
+      <h4>1. Find my role</h4>
+      <ul>
+        <li>8 questions; each answer adds points to one or more of 6 roles (Software Developer, Web Developer, Cloud/DevOps, Cybersecurity, Data Analyst, AI/ML).</li>
+        <li>Fit % = points the role got ÷ the most it could get. Shows the top 3 roles.</li>
+        <li>Role report: what the job is, college subjects that matter, skills to learn next, a mini project, demand in the market and fresher salary - each with a source link.</li>
+      </ul>
+      <h4>2. Check a certificate</h4>
+      <ul>
+        <li>Type any name - typos are fine ("secuirty plus" finds CompTIA Security+). We use <b>edit distance</b> (Levenshtein, dynamic programming).</li>
+        <li>5 checks, 0-2 points each, shown in a table with the reason for every point.</li>
+        <li>Verdict: Worth it / Think twice / Skip, plus hard stops: Not yet (needs work experience), Not available (exam closed), Not for this role.</li>
+        <li>Better picks: recognised certificates for the same role that score "Worth it", cheapest first.</li>
+      </ul>
+      <h4>3. Check an ad</h4>
+      <ul>
+        <li>Paste any ad or WhatsApp message. 8 regex rules look for pressure tactics: urgency, tiny prices, "bonus worth ₹15,000", job guarantees, earning claims, speed promises, brand-name tools, crowd claims.</li>
+        <li>Each warning shows the exact phrase found and why it matters. The job-guarantee rule links to the CCPA guidelines on misleading ads.</li>
+      </ul>
+    </section>
+
+    <section class="box">
+      <h2>Step 5 - How a certificate is scored</h2>
+      <table>
+        <tr><th>Check</th><th>2 points</th><th>1 point</th><th>0 points</th></tr>
+        <tr><td>Who gives it</td><td>Company / body that owns the field, or an IIT</td><td>Known learning platform</td><td>Unknown training company</td></tr>
+        <tr><td>How you earn it</td><td>Supervised exam</td><td>Online tests or projects</td><td>Just attending</td></tr>
+        <tr><td>Fits your role</td><td>Made for your job</td><td>Depends on topic</td><td>Different job</td></tr>
+        <tr><td>In demand (verified sources)</td><td>2 or more sources</td><td>1 source</td><td>None</td></tr>
+        <tr><td>Cost</td><td>Free or under ₹2,000</td><td>₹2,000 - 10,000</td><td>Above ₹10,000</td></tr>
+      </table>
+      <p class="small">70%+ = Worth it · 45-69% = Think twice · below 45% = Skip.</p>
+    </section>
+
+    <section class="box">
+      <h2>Step 6 - Keeping data up to date without fake information</h2>
+      <p><b>Decisions:</b></p>
+      <ul>
+        <li>We first planned to collect job posts by hand. We dropped this: it is slow and goes out of date.</li>
+        <li>We wanted the data to stay current automatically, the way AI tools search the web, but with <b>no made-up numbers</b>.</li>
+        <li>We looked at RAG (retrieval-augmented generation) and decided it was <b>not needed yet</b>: CertWise asks fixed questions (salary for role X, price of certificate Y), so a scheduled, fact-checked refresh is cheaper and safer than generating answers for every visitor. RAG would make sense only if we add a free-text "Ask CertWise" chat.</li>
+      </ul>
+      <p><b>How the monthly refresh works:</b></p>
+      <ol>
+        <li><b>Search and read</b> - once a month, GitHub Actions runs <code>refresh/refresh.mjs</code>. It asks Claude (with web search and web fetch) for each role's salary, demand and skills, and each certificate's price, status and demand - every fact with its URL and an exact quote.</li>
+        <li><b>Fact check</b> - <code>refresh/verify.js</code> downloads the page itself and keeps a fact only if the quote is really on the page, every number in the fact is inside the quote, and (for demand) the quote names the certificate.</li>
+        <li><b>Publish</b> - verified facts go to <code>data/live.js</code> with the date. Facts that fail are dropped and listed in <code>refresh/report.json</code>. If a fact fails this month, last month's verified fact is kept.</li>
+        <li><b>Show</b> - the app shows each live fact with its quote, link and check date.</li>
+      </ol>
+      <p class="small">Status: the refresh code is built and tested (dry run). The first real run needs an <code>ANTHROPIC_API_KEY</code> repository secret; until then the app clearly says "not refreshed yet" and uses the hand-checked facts below.</p>
+    </section>
+
+    <section class="box">
+      <h2>Step 7 - Proof for every claim</h2>
+      <ul>
+        <li><b>Certificates:</b> every price, exam type and eligibility rule has official proof links - <b>44 links</b> across 31 certificates, shown as "Proof" under each verdict.</li>
+        <li><b>Roles:</b> every salary and demand line links to its source (Naukri JobSpeak, India Skills Report 2026, TeamLease Digital, salary guides).</li>
+        <li><b>Our advice is labelled:</b> college subjects, skills, mini projects and some notes are our guidance, not facts, so the app marks them <span class="adv">our advice</span>.</li>
+      </ul>
+      <h4>Things we corrected after checking the sources</h4>
+      <table>
+        <tr><th>Item</th><th>Before</th><th>After checking</th></tr>
+        <tr><td>CompTIA Security+</td><td>"above USD 350"</td><td>USD 439 (list price since June 2026)</td></tr>
+        <tr><td>NPTEL exam fee</td><td>flat ₹1,000</td><td>Course free; exam ₹500 - 1,000 depending on the course</td></tr>
+        <tr><td>ISC2 CC</td><td>free exam</td><td>Free-exam offer ended 20 May 2026; now USD 199 + USD 50 yearly fee</td></tr>
+        <tr><td>TensorFlow certificate</td><td>closed "in 2024"</td><td>Year removed (not on the page); the official page says the exam has been closed</td></tr>
+        <tr><td>Kaggle, HackerRank</td><td>"free", "timed test"</td><td>"No fee shown on the official page" - the rest wasn't provable</td></tr>
+        <tr><td>Cybersecurity salary</td><td>TeamLease ₹7 - 8.5 LPA</td><td>That figure covers AI and cloud freshers only; now ₹5 - 12 LPA (analysts) and about ₹3.5 LPA (SOC freshers), each with a source</td></tr>
+        <tr><td>Deck: ASCI statistic</td><td>"~1/3 of ASCI complaints were about education"</td><td>Not on the source page - replaced with "26% of edtech ads promise guaranteed success"</td></tr>
+        <tr><td>Deck: IT hiring</td><td>"IT hiring stayed flat"</td><td>"IT hiring stayed under pressure" (Naukri's own words)</td></tr>
+        <tr><td>Deck: ads</td><td>"countdown timers"</td><td>"₹9 entry, 'certificate included'" (what the page shows)</td></tr>
+      </table>
+      <h4>Claims we removed because we couldn't prove them</h4>
+      <ul>
+        <li>"Education tops ASCI's ad complaints"</li>
+        <li>"Online course completion is only 5-15%"</li>
+        <li>"Class Central has 250,000+ reviews" (the page blocks automated checks)</li>
+      </ul>
+      <p class="small">Known gap: Oracle's exam pages were down for maintenance on 3 Oct 2026, so the two Oracle prices point to the official page instead of a checked number.</p>
+    </section>
+
+    <section class="box">
+      <h2>Step 8 - Testing</h2>
+      <ul>
+        <li><b>46 automated tests</b> (<code>npm test</code>): search and typos, whole-word matching, every verdict type, demand scoring from live data, the fact checker, alternatives, the ad scanner, that every role can win the quiz, and edit distance.</li>
+        <li>Browser checks on phone and laptop sizes, with no console errors.</li>
+        <li>Bugs found and fixed:
+          <ul>
+            <li>The "earning claim" rule matched "Learn 20 tools" - now it needs "earn" plus a money amount.</li>
+            <li>The "brand tools" rule flagged official vendor ads - now it needs a "tools" context.</li>
+            <li>"AI tools workshop" wasn't found by search - added keywords to certificates.</li>
+            <li>NPTEL showed up as the "better pick" for every role - general certificates are now left out of role alternatives.</li>
+            <li>Added the "Not for this role" verdict so a cloud certificate isn't called "Worth it" for a data analyst.</li>
+          </ul>
+        </li>
+        <li>Security: pasted text is escaped before it is shown (no XSS); no login and no personal data stored.</li>
+      </ul>
+    </section>
+
+    <section class="box">
+      <h2>Step 9 - Round 1 presentation</h2>
+      <ul>
+        <li>6 slides in the organisers' template, styled like our Smart India Hackathon deck (pill headings, icon flows).</li>
+        <li>Slides: Title · Idea (problem, solution, innovation) · Technical approach · Feasibility and viability · Impact and benefits · Research and references.</li>
+        <li>Every number on the slides has a reference number [1]-[9] that matches the list on slide 6.</li>
+      </ul>
+    </section>
+
+    <section class="box">
+      <h2>Tech used</h2>
+      <p>HTML, CSS, JavaScript (no framework, no backend) · Node.js for tests and the refresh script · Claude API (web search + web fetch) for the monthly refresh · GitHub Actions for scheduling · GitHub Pages for hosting (₹0 server cost).</p>
+    </section>
+
+    <section class="box">
+      <h2>What's next</h2>
+      <ul>
+        <li>Fill in our own survey numbers on slide 5 and submit Round 1 (3 Oct, 11:59 PM).</li>
+        <li>Add the <code>ANTHROPIC_API_KEY</code> secret on GitHub and run the first refresh, so live, quote-checked facts appear.</li>
+        <li>Record a 60-90 second backup video of the demo for Round 2 (5 Oct).</li>
+        <li>Later: more certificates and roles; a free-text "Ask CertWise" chat is the point where RAG would be worth adding.</li>
+      </ul>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>Team Ctrl Freaks · She Solves 3.0 · <a href="index.html">Back to CertWise</a></p>
+    <p class="small">Last updated 3 Oct 2026.</p>
+  </footer>
+
+</body>
+</html>

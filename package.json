@@ -1,0 +1,15 @@
+{
+  "name": "certwise",
+  "version": "1.0.0",
+  "description": "CertWise - find your role, check if a certificate is worth it, decode pushy ads. Team Ctrl Freaks, She Solves 3.0.",
+  "private": true,
+  "scripts": {
+    "start": "node serve.js",
+    "test": "node tests/test_logic.js",
+    "refresh": "node refresh/refresh.mjs",
+    "refresh:dry": "node refresh/refresh.mjs --dry-run"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "latest"
+  }
+}

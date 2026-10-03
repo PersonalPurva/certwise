@@ -1,0 +1,295 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f6fb;
+  color: #222;
+  margin: 0;
+}
+
+header {
+  background-color: #1f3a68;
+  color: white;
+  padding: 18px 16px;
+  text-align: center;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 30px;
+}
+
+header p {
+  margin: 6px 0 0 0;
+}
+
+main {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 12px 16px;
+}
+
+.box {
+  background-color: white;
+  border: 1px solid #ccd3e0;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+h2 {
+  margin-top: 0;
+  font-size: 20px;
+  color: #1f3a68;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+select, input, textarea {
+  font-size: 16px;
+  padding: 8px;
+  border: 1px solid #999;
+  border-radius: 4px;
+  font-family: Arial, sans-serif;
+}
+
+select {
+  min-width: 240px;
+}
+
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+  flex-wrap: wrap;
+}
+
+.row input {
+  flex: 1;
+  min-width: 200px;
+}
+
+button {
+  font-size: 16px;
+  padding: 8px 16px;
+  border: 1px solid #1f3a68;
+  border-radius: 4px;
+  background-color: white;
+  color: #1f3a68;
+  cursor: pointer;
+}
+
+button.primary {
+  background-color: #1f3a68;
+  color: white;
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.tab.active {
+  background-color: #1f3a68;
+  color: white;
+}
+
+.hidden {
+  display: none;
+}
+
+.small {
+  font-size: 13px;
+  color: #555;
+}
+
+a {
+  color: #1f3a68;
+}
+
+.result {
+  border-top: 2px solid #1f3a68;
+  margin-top: 14px;
+  padding-top: 10px;
+}
+
+.result h3 {
+  margin: 0 0 4px 0;
+}
+
+.verdict {
+  display: inline-block;
+  font-size: 22px;
+  font-weight: bold;
+  padding: 6px 14px;
+  border-radius: 4px;
+  margin: 8px 0;
+}
+
+.verdict span {
+  font-size: 15px;
+  font-weight: normal;
+}
+
+.green { background-color: #dff3e3; color: #1d6b2f; border: 1px solid #1d6b2f; }
+.amber { background-color: #fff3d6; color: #8a5a00; border: 1px solid #8a5a00; }
+.red   { background-color: #fde2e2; color: #a12020; border: 1px solid #a12020; }
+
+.warn {
+  background-color: #fff3d6;
+  border-left: 4px solid #8a5a00;
+  padding: 8px;
+}
+
+.okline {
+  color: #1d6b2f;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+  font-size: 14px;
+}
+
+th, td {
+  border: 1px solid #ccd3e0;
+  padding: 6px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background-color: #e8edf6;
+}
+
+td.pts {
+  white-space: nowrap;
+  text-align: center;
+}
+
+td.found {
+  font-style: italic;
+  color: #a12020;
+}
+
+.alts {
+  background-color: #eef6ff;
+  border: 1px solid #b9d3f0;
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.alts ul {
+  margin: 6px 0;
+}
+
+fieldset.q {
+  border: 1px solid #ccd3e0;
+  border-radius: 4px;
+  margin: 0 0 10px 0;
+  padding: 8px 12px;
+}
+
+fieldset.q legend {
+  font-weight: bold;
+  padding: 0 4px;
+}
+
+label.opt {
+  display: block;
+  margin: 4px 0;
+  cursor: pointer;
+}
+
+h4 {
+  margin: 16px 0 6px 0;
+  color: #1f3a68;
+}
+
+.fit {
+  font-size: 15px;
+  background-color: #dff3e3;
+  color: #1d6b2f;
+  border: 1px solid #1d6b2f;
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.chip {
+  display: inline-block;
+  background-color: #e8edf6;
+  border: 1px solid #ccd3e0;
+  border-radius: 12px;
+  padding: 3px 10px;
+  margin: 2px 0;
+  font-size: 14px;
+}
+
+.tag {
+  background-color: #1f3a68;
+  color: white;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 14px;
+}
+
+.bar {
+  background-color: #e8edf6;
+  height: 12px;
+  width: 100%;
+  min-width: 120px;
+}
+
+.bar div {
+  background-color: #1f3a68;
+  height: 12px;
+}
+
+.quote {
+  font-size: 13px;
+  font-style: italic;
+  color: #444;
+  background-color: #f6f8fb;
+  border: 1px solid #e1e6ef;
+  border-radius: 4px;
+  padding: 6px 8px;
+  margin: 4px 0 8px 0;
+}
+
+.proof {
+  font-size: 13px;
+  color: #555;
+}
+
+.adv {
+  font-size: 12px;
+  font-weight: normal;
+  font-style: italic;
+  color: #8a5a00;
+  background-color: #fff3d6;
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+footer {
+  text-align: center;
+  padding: 10px 16px 24px 16px;
+  color: #555;
+}
+
+@media (max-width: 600px) {
+  table {
+    font-size: 13px;
+  }
+  select {
+    width: 100%;
+  }
+}

@@ -1,0 +1,34 @@
+# CertWise - refresh live facts automatically once a month (and on demand from the Actions tab).
+# Needs a repository secret named ANTHROPIC_API_KEY (Settings -> Secrets and variables -> Actions).
+name: Monthly data refresh
+
+on:
+  schedule:
+    - cron: "30 3 1 * *"     # 03:30 UTC on the 1st of every month
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npm test
+      - name: Refresh and fact-check
+        run: npm run refresh
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      - name: Save verified facts
+        run: |
+          git config user.name "certwise-bot"
+          git config user.email "certwise-bot@users.noreply.github.com"
+          git add data/live.js refresh/report.json
+          git diff --cached --quiet || git commit -m "Monthly refresh of verified facts"
+          git push
