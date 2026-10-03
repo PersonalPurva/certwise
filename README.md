@@ -26,16 +26,28 @@ unless our software has found its exact quote on the source page.
 | `data/certs.js` | 31 certificates with checkable facts (issuer, exam type, cost band, roles, eligibility, status) |
 | `data/roles.js` | The 8-question quiz and, per role, college subjects, skills to learn, mini project, research fallback |
 | `data/live.js` | **Verified live facts** written by the monthly refresh (empty until the first run) |
-| `refresh/refresh.mjs` | Monthly refresh: Claude searches and reads trusted pages and returns facts with exact quotes |
+| `refresh/refresh.mjs` | Monthly refresh: an AI (free Gemini or paid Claude) reads trusted pages and returns facts with exact quotes |
+| `refresh/gemini.mjs`, `refresh/pages.js` | Free mode: calls Gemini and cuts long pages down to the parts that matter |
 | `refresh/verify.js` | Fact checker: fetches each page itself and keeps a fact only if the quote is really there |
 | `.github/workflows/refresh.yml` | Runs the refresh automatically on the 1st of every month and commits `data/live.js` |
-| `tests/test_logic.js` | 46 automated tests for the logic and the fact checker |
+| `tests/test_logic.js` | 52 automated tests for the logic, the fact checker and the free-mode helpers |
 
 ## How the data stays current (and honest)
 
-1. **Search + read.** For each role (salary, demand, skills) and each certificate (price, status, demand),
-   `refresh.mjs` asks Claude (`claude-opus-5-5`) to use web search and web fetch, and to return every fact as
-   `{value, url, quote}` with the quote copied word-for-word.
+The refresh runs with **one** of two keys (if both are set, the free one is used):
+
+| | Free: `GEMINI_API_KEY` | Paid: `ANTHROPIC_API_KEY` |
+|---|---|---|
+| Where facts come from | Our script downloads the trusted pages already listed in `data/certs.js` (`src`) and `data/roles.js` (`SOURCES`); Gemini (`gemini-3.8-flash`) copies out the facts | Claude (`claude-opus-5-5`) searches the web and reads pages, so it can find new sources |
+| What it updates | Price, status, salary, demand, skills | The same, plus sources that say a certificate is in demand |
+| Cost | ₹0 on the free tier (the script waits 15 s between calls to stay under the limits) | Pay per use |
+
+Free Gemini keys can't use Google Search, which is why the free mode re-reads our listed sources instead of
+searching. In free mode a certificate's "in demand" check stays *not scored yet* (it is left out of the score)
+rather than dropping to 0.
+
+1. **Read.** For each role (salary, demand, skills) and each certificate (price, status), the AI returns every
+   fact as `{value, url, quote}` with the quote copied word-for-word.
 2. **Fact check.** `verify.js` downloads the page itself, turns it into text, and keeps the fact only if
    - the quote is found on the page (small differences like curly quotes, dashes and "Rs." vs "₹" are ignored), and
    - every number in the value is inside the quote, and
@@ -68,14 +80,18 @@ fact-checked refresh is cheaper and safer than generating answers live for every
 
 ### Set up the automatic refresh
 
-1. Push this folder to a GitHub repository and turn on GitHub Pages for it.
-2. Add a repository secret `ANTHROPIC_API_KEY` (Settings → Secrets and variables → Actions).
-3. Actions tab → "Monthly data refresh" → **Run workflow** for the first run; after that it runs monthly.
-4. To try it locally: set `ANTHROPIC_API_KEY`, then `npm run refresh -- --ids data,aws-ccp` (two topics only).
-   `npm run refresh:dry` shows the questions without calling the API.
+1. Get a key:
+   - **Free:** https://aistudio.google.com/api-keys → **Create API key**.
+   - **Paid:** https://console.anthropic.com → API Keys → Create Key (needs credits).
+2. Add it as a repository secret named `GEMINI_API_KEY` or `ANTHROPIC_API_KEY`
+   (https://github.com/PersonalPurva/certwise/settings/secrets/actions → New repository secret).
+   Never put a key in code, a commit or a chat.
+3. Actions tab → "Monthly data refresh" → **Run workflow**. Type `data,aws-ccp` in the box for a small test run,
+   or leave it empty for everything. After that it runs by itself on the 1st of every month.
+4. `npm run refresh:dry` shows the questions (and, in free mode, the pages it will read) without calling any API.
 
-Each full refresh makes one Claude request per role and per certificate (about 32), each with up to 6 web searches
-and 6 page fetches, so it costs real API credits — check the cost of a two-topic run first.
+A full refresh makes one AI request per role and per certificate (about 32). With the paid key each request
+can also make up to 6 web searches and 6 page fetches, so check the cost of a two-topic run first.
 
 ## How a certificate is scored (be ready to explain this)
 

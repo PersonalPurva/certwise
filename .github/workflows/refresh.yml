@@ -1,11 +1,19 @@
 # CertWise - refresh live facts automatically once a month (and on demand from the Actions tab).
-# Needs a repository secret named ANTHROPIC_API_KEY (Settings -> Secrets and variables -> Actions).
+# Needs ONE repository secret (Settings -> Secrets and variables -> Actions):
+#   GEMINI_API_KEY     free key from Google AI Studio - re-reads our listed sources
+#   ANTHROPIC_API_KEY  paid key - also searches the web for new sources
+# If both are set, the free Gemini key is used.
 name: Monthly data refresh
 
 on:
   schedule:
     - cron: "30 3 1 * *"     # 03:30 UTC on the 1st of every month
   workflow_dispatch:
+    inputs:
+      ids:
+        description: "Only these roles/certificates, comma-separated (e.g. data,aws-ccp). Leave empty for all."
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -22,9 +30,12 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npm test
       - name: Refresh and fact-check
-        run: npm run refresh
+        run: |
+          if [ -n "$IDS" ]; then npm run refresh -- --ids "$IDS"; else npm run refresh; fi
         env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          IDS: ${{ github.event.inputs.ids }}
       - name: Save verified facts
         run: |
           git config user.name "certwise-bot"

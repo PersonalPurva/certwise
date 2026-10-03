@@ -10,7 +10,7 @@
 
   <header>
     <h1>CertWise - Project log</h1>
-    <p>Everything we did, step by step, with the reason for each choice. Team Ctrl Freaks · She Solves 3.0</p>
+    <p>Everything we worked on in this project, from the first problem-statement search to today. Team Ctrl Freaks · She Solves 3.0</p>
   </header>
 
   <main>
@@ -18,26 +18,87 @@
     <section class="box">
       <h2>At a glance</h2>
       <table>
-        <tr><th>Hackathon</th><td>She Solves 3.0 (PCCOE ACM-W) · Track: Web &amp; Software Development · Domain: Education</td></tr>
+        <tr><th>Hackathon</th><td>She Solves 3.0 (PCCOE ACM-W) · Theme "Time Stone - Ideas Beyond Time" · Track: Web &amp; Software Development · Domain: Education</td></tr>
         <tr><th>Problem</th><td>First-year engineering students don't know which job role to aim for or which certificates matter, so they collect many low-value ones - often pulled in by pressure-selling ads.</td></tr>
         <tr><th>Solution</th><td>CertWise: a free web app - find your role, see what it needs, then check if a certificate (or an ad) is worth it.</td></tr>
         <tr><th>Live app</th><td><a href="index.html">Open CertWise</a> · Code: <a href="https://github.com/PersonalPurva/certwise">github.com/PersonalPurva/certwise</a></td></tr>
-        <tr><th>Rounds</th><td>Round 1 - idea + 6-slide PPT, due 3 Oct 2026 · Round 2 - prototype + GitHub + 10-minute demo, 5 Oct · Round 3 - 5-hour build at PCCOE, 9 Oct</td></tr>
-        <tr><th>Status</th><td>Prototype working (3 features, 31 certificates, 6 roles) · 46 automated tests passing · Round 1 deck ready</td></tr>
+        <tr><th>Rounds</th><td>Round 1 - idea + 6-slide PPT, due 3 Oct 2026, 11:59 PM · Round 2 - prototype + GitHub + 10-minute demo, 5 Oct · Round 3 - 5-hour build at PCCOE, 9 Oct</td></tr>
+        <tr><th>Status</th><td>Live on GitHub Pages (3 features, 31 certificates, 6 roles) · 52 automated tests passing · Round 1 deck ready · Monthly refresh built (free Gemini key or paid Claude key) - waiting for a key</td></tr>
+      </table>
+      <p class="small">Jump to: <a href="#history">Full history</a> · <a href="#ideas">Ideas we considered</a> · <a href="#research">Research</a> · <a href="#built">What we built</a> · <a href="#refresh">Data refresh</a> · <a href="#proof">Proof</a> · <a href="#testing">Testing</a> · <a href="#next">What's next</a></p>
+    </section>
+
+    <section class="box" id="history">
+      <h2>Full history</h2>
+      <p class="small">Every request and decision in order (times are IST). This list is updated every time the project changes.</p>
+      <table>
+        <tr><th>When</th><th>Request / decision</th><th>What was done</th></tr>
+        <tr><td>2 Oct, 4:00 AM</td><td>We have a women-only hackathon and need a problem statement.</td>
+          <td>First shortlist of 5 ideas: evidence locker for online-harassment victims, sealed "match" harassment reporting, self-help-group savings ledger, fake job / loan-app scam checker, career-break returnship matcher.</td></tr>
+        <tr><td>2 Oct, 4:02 AM</td><td>Add a market-research column.</td>
+          <td>Added real numbers for each idea (NCRB cybercrime data, POSH survey, DAY-NRLM, I4C scam reports, returnship data). The SHG ledger turned weak: the government's LokOS already does it.</td></tr>
+        <tr><td>2 Oct, 4:04 AM</td><td>Shared the She Solves 3.0 Unstop link.</td>
+          <td>Read the Unstop page, rulebook and PPT template: 6 domains, Web &amp; Software track, Round 1 PPT by 3 Oct, Round 2 demo 5 Oct, Round 3 offline on 9 Oct.</td></tr>
+        <tr><td>2 Oct, 4:10 AM</td><td>Add an existing-solutions column, dive deep.</td>
+          <td>Checked each idea against real products. Scam checkers, SHG ledgers and returnship platforms were already crowded (Truecaller, Chakshu, LokOS, E-Shakti, HerKey, Sheroes...). The evidence locker had partial rivals (ProofSnap, Uli, StopNCII).</td></tr>
+        <tr><td>2 Oct, 4:32 AM</td><td>The problem must be a real current need, and existing solutions must be incomplete.</td>
+          <td>New round: deepfake / morphed-image 24-hour takedown assistant, HPV vaccine information, postpartum depression screening in Marathi, menopause support, PG safety ratings in Pune.</td></tr>
+        <tr><td>2 Oct, 4:37 AM</td><td>Look for more and different.</td>
+          <td>Seven new areas (A-G): school menstrual-hygiene compliance tracker (Supreme Court order, Jan 2026), night-shift safety for women workers, Ladki Bahin payment helper, domestic worker wage ledger, gig home-service safety timer, late payments to women-run businesses, childcare finder.</td></tr>
+        <tr><td>2 Oct, 4:45 AM</td><td>Dive deeper into G (childcare) and D (domestic workers).</td>
+          <td>D had the cleaner gap; G worked only as a daycare safety scorecard, since crèche finders already exist.</td></tr>
+        <tr><td>2 Oct, 4:49 AM</td><td>Find more - and follow the "how winners choose a problem" guide (who exactly has the problem, can we demo it, our unfair advantage, will other teams pick it).</td>
+          <td>Applied those questions to every idea. New: mercury-laced fairness cream checker, microfinance over-borrowing checker, housing-society waste tracker. Dropped matrimonial fraud, menstrual leave, ASHA tools, domestic-violence help finder and plain reminder apps.</td></tr>
+        <tr><td>2 Oct, 4:56 AM</td><td>Find more.</td>
+          <td>Ideas from our own lives: girls' fee-waiver rights checker, voter-roll helper for married women, campus pad-machine status, "don't rent your bank account" mule checker, home-baker label maker, PG deposit evidence kit.</td></tr>
+        <tr><td>2 Oct, 5:00 AM</td><td>Use problem statements other hackathons share, and check SIH.</td>
+          <td>Went through all 191 SIH 2026 software statements and women-focused hackathons. Best fit: SIH26095 (inspection app) narrowed to school menstrual-hygiene inspections.</td></tr>
+        <tr><td>2 Oct, 5:16 AM</td><td>Look for more.</td>
+          <td>Read SIH 2025 (238 statements), SIH 2024's women-safety statement and 2026 police hackathons. New option: SIH25070, secure data wiping with a verifiable certificate.</td></tr>
+        <tr><td>2 Oct, 3:27 PM</td><td>Find something other teams won't look for but meets every criterion.</td>
+          <td>Name-mismatch finder for married women (Aadhaar / PAN / bank / voter ID). Backups: textbook gender audit, wedding gift list.</td></tr>
+        <tr><td>2 Oct, 9:14 PM</td><td><b>Final choice - our own problem:</b> first-years don't know which certificates are useful, chase too many, and ads (like ₹9 workshops) pull them in. Do market research and check existing solutions.</td>
+          <td>Market research (Coursera survey 96% / 85%, GradRight hiring-manager survey, ASCI edtech ad study) and existing tools (Class Central, roadmap.sh, ROI calculators, Credly, FutureSkills Prime, AICTE NEAT). Gap: nothing judges one certificate for an Indian first-year's role.</td></tr>
+        <tr><td>3 Oct, 5:08 AM</td><td>Let's work on the prototype.</td>
+          <td>Built CertWise as plain HTML/CSS/JavaScript: certificate check (typo-tolerant search, 5 checks, verdict, better picks) and ad check (8 warning-sign rules). 31 certificates, 34 tests.</td></tr>
+        <tr><td>3 Oct, 5:22 AM</td><td>Students also don't know which job role to pick - ask questions and give a report with subjects, market demand and salary.</td>
+          <td>Added the "Find my role" tab: 8-question quiz, fit % for 6 roles, report with college subjects, skills, mini project, demand and fresher salary with sources.</td></tr>
+        <tr><td>3 Oct, 5:27 AM</td><td>Team name is Ctrl Freaks.</td>
+          <td>Added to the app footer; wrote the text for all 6 slides.</td></tr>
+        <tr><td>3 Oct, 5:29 AM</td><td>Make the PPT in the organisers' template, similar to our SIH deck.</td>
+          <td>Built the 6-slide deck in SIH style (pill headings, icon flows, Bahnschrift / Cambria), checked every slide as an image, validated the file, saved PPTX + PDF.</td></tr>
+        <tr><td>3 Oct, 5:44 AM</td><td>Keep it fully automatic: no collecting job posts by hand, stay up to date the way AI tools search the web, mention salary, no fake information. Use RAG only if needed.</td>
+          <td>Removed the job-post collector. Built a monthly refresh instead of RAG: AI reads trusted pages, our checker keeps a fact only if its exact quote is on the page. GitHub Actions runs it monthly. 46 tests.</td></tr>
+        <tr><td>3 Oct, ~6:00 AM</td><td>Add proof for everything we say.</td>
+          <td>44 proof links on certificates, sources on every salary and demand line, "our advice" labels. Checked every number in the app and deck against its page; corrected wrong prices and removed claims we couldn't prove (details below). Deck numbers got [1]-[9] references.</td></tr>
+        <tr><td>3 Oct, 6:30 AM</td><td>Push to GitHub and enable Pages. Also save everything we did on a page.</td>
+          <td>Created the public repo PersonalPurva/certwise, turned on GitHub Pages, tested the live site. Created this project log page.</td></tr>
+        <tr><td>3 Oct, 8:06 AM</td><td>How do I create an API key?</td>
+          <td>Steps for an Anthropic key and adding it as a GitHub secret (never in code or chat).</td></tr>
+        <tr><td>3 Oct, 8:07 AM</td><td>Can we use a free API key instead?</td>
+          <td>Added a free mode using a Google Gemini key: our script downloads the trusted pages, Gemini copies out the facts, the quote checker still verifies each one. Free Gemini keys can't search Google, so this mode re-reads our listed sources instead of searching the web. Tested the whole flow with a fake Gemini. 52 tests.</td></tr>
+        <tr><td>3 Oct, 8:20 AM</td><td>Store everything from this project in this log, and update it every time something changes.</td>
+          <td>Added this full history and the list of every idea we considered. From now on each change adds a row here.</td></tr>
       </table>
     </section>
 
-    <section class="box">
-      <h2>Step 1 - Choosing the problem</h2>
-      <ul>
-        <li>We first looked at many ideas across Health, Safety, Women Empowerment and Education, and checked each one against Smart India Hackathon problem lists and other hackathons.</li>
-        <li>For every idea we asked three questions: <b>is it a real problem</b>, <b>do existing solutions already solve it</b>, and <b>can we build a working demo in time</b>.</li>
-        <li>We chose our own problem because we live it: in first year, students are told to "do certificates", see ads for ₹9 workshops, and don't know which ones employers value.</li>
-        <li>Later we added <b>role guidance</b>: students are also confused about which job role to pick, and you can't judge a certificate without knowing the role.</li>
-      </ul>
+    <section class="box" id="ideas">
+      <h2>Step 1 - Ideas we considered before choosing</h2>
+      <p>For every idea we asked: is it a real, current problem? Do existing solutions already solve it? Can we demo it by 5 Oct? Do we have an unfair advantage? Will other teams pick it?</p>
+      <table>
+        <tr><th>Round</th><th>Ideas</th><th>What we found</th></tr>
+        <tr><td>1</td><td>Evidence locker for online-harassment victims · sealed "match" harassment reporting · self-help-group ledger · job / loan-app scam checker · returnship matcher</td><td>Ledger, scam checker and returnship already well served. Evidence locker had partial rivals; sealed reporting exists abroad but not in India.</td></tr>
+        <tr><td>2</td><td>Deepfake takedown assistant · HPV vaccine info · postpartum depression screening · menopause support · PG safety ratings</td><td>Deepfake takedown was the strongest new need (24-hour takedown rule from Nov 2025); health ideas were weaker on technical depth.</td></tr>
+        <tr><td>3</td><td>School menstrual-hygiene compliance tracker · night-shift safety · Ladki Bahin payment helper · domestic worker ledger · gig worker safety timer · late-payment tracker · childcare finder</td><td>The school tracker had a court-documented need and no public tool; domestic worker ledger second.</td></tr>
+        <tr><td>4</td><td>Mercury fairness-cream checker · microfinance over-borrowing checker · society waste tracker</td><td>Mercury checker had fresh evidence (Maharashtra FDA, July 2026) and a real dataset.</td></tr>
+        <tr><td>5</td><td>Girls' fee-waiver rights checker · voter-roll helper · campus pad-machine status · mule-account checker · home-baker labels · PG deposit kit</td><td>Fee-waiver checker strongest: we are the users ourselves.</td></tr>
+        <tr><td>6</td><td>SIH 2026 / 2025 / 2024 statements and police hackathons</td><td>SIH26095 (inspection app) and SIH25070 (secure wipe certificate) fit best.</td></tr>
+        <tr><td>7</td><td>Name-mismatch finder for married women · textbook gender audit · wedding gift list</td><td>Off the usual path, but needs careful legal checking.</td></tr>
+        <tr><td><b>Final</b></td><td><b>Certificate overload (our own problem)</b></td><td><b>Chosen: we lived it, nothing judges one certificate for a first-year's role, and it repeats every year with new students - so it is sustainable.</b></td></tr>
+      </table>
     </section>
 
-    <section class="box">
+    <section class="box" id="research">
       <h2>Step 2 - Research: is this a real problem?</h2>
       <p>Every number below was checked on its source page. The exact words are in the "Proof" column.</p>
       <table>
@@ -79,7 +140,7 @@
       </table>
     </section>
 
-    <section class="box">
+    <section class="box" id="built">
       <h2>Step 4 - What we built</h2>
       <h4>1. Find my role</h4>
       <ul>
@@ -99,10 +160,7 @@
         <li>Paste any ad or WhatsApp message. 8 regex rules look for pressure tactics: urgency, tiny prices, "bonus worth ₹15,000", job guarantees, earning claims, speed promises, brand-name tools, crowd claims.</li>
         <li>Each warning shows the exact phrase found and why it matters. The job-guarantee rule links to the CCPA guidelines on misleading ads.</li>
       </ul>
-    </section>
-
-    <section class="box">
-      <h2>Step 5 - How a certificate is scored</h2>
+      <h4>How a certificate is scored</h4>
       <table>
         <tr><th>Check</th><th>2 points</th><th>1 point</th><th>0 points</th></tr>
         <tr><td>Who gives it</td><td>Company / body that owns the field, or an IIT</td><td>Known learning platform</td><td>Unknown training company</td></tr>
@@ -111,29 +169,35 @@
         <tr><td>In demand (verified sources)</td><td>2 or more sources</td><td>1 source</td><td>None</td></tr>
         <tr><td>Cost</td><td>Free or under ₹2,000</td><td>₹2,000 - 10,000</td><td>Above ₹10,000</td></tr>
       </table>
-      <p class="small">70%+ = Worth it · 45-69% = Think twice · below 45% = Skip.</p>
+      <p class="small">70%+ = Worth it · 45-69% = Think twice · below 45% = Skip. A check that hasn't been scored yet is left out of the total.</p>
     </section>
 
-    <section class="box">
-      <h2>Step 6 - Keeping data up to date without fake information</h2>
+    <section class="box" id="refresh">
+      <h2>Step 5 - Keeping data up to date without fake information</h2>
       <p><b>Decisions:</b></p>
       <ul>
         <li>We first planned to collect job posts by hand. We dropped this: it is slow and goes out of date.</li>
         <li>We wanted the data to stay current automatically, the way AI tools search the web, but with <b>no made-up numbers</b>.</li>
         <li>We looked at RAG (retrieval-augmented generation) and decided it was <b>not needed yet</b>: CertWise asks fixed questions (salary for role X, price of certificate Y), so a scheduled, fact-checked refresh is cheaper and safer than generating answers for every visitor. RAG would make sense only if we add a free-text "Ask CertWise" chat.</li>
+        <li>To keep it free, the refresh can run with a <b>free Google Gemini key</b>. A paid Claude key is the other option.</li>
       </ul>
-      <p><b>How the monthly refresh works:</b></p>
+      <table>
+        <tr><th></th><th>Free mode (Gemini key)</th><th>Paid mode (Claude key)</th></tr>
+        <tr><td>Where facts come from</td><td>Our script downloads the trusted pages already listed in our data (official exam pages, salary and hiring reports)</td><td>Claude searches the web and reads pages, so it can find new sources</td></tr>
+        <tr><td>What it updates</td><td>Prices, exam status, salary, demand, skills</td><td>The same, plus sources that say a certificate is in demand</td></tr>
+        <tr><td>Cost</td><td>₹0 (free tier limits; the script waits between calls)</td><td>Pay per use</td></tr>
+        <tr><td>Fact check</td><td colspan="2">The same in both: <code>refresh/verify.js</code> downloads the page itself and keeps a fact only if the quote is really on the page and every number in the fact is inside the quote. Failed facts are dropped and listed in <code>refresh/report.json</code>.</td></tr>
+      </table>
       <ol>
-        <li><b>Search and read</b> - once a month, GitHub Actions runs <code>refresh/refresh.mjs</code>. It asks Claude (with web search and web fetch) for each role's salary, demand and skills, and each certificate's price, status and demand - every fact with its URL and an exact quote.</li>
-        <li><b>Fact check</b> - <code>refresh/verify.js</code> downloads the page itself and keeps a fact only if the quote is really on the page, every number in the fact is inside the quote, and (for demand) the quote names the certificate.</li>
-        <li><b>Publish</b> - verified facts go to <code>data/live.js</code> with the date. Facts that fail are dropped and listed in <code>refresh/report.json</code>. If a fact fails this month, last month's verified fact is kept.</li>
-        <li><b>Show</b> - the app shows each live fact with its quote, link and check date.</li>
+        <li>Once a month (or on demand from the Actions tab), GitHub Actions runs <code>refresh/refresh.mjs</code>. A test run can be limited to a few topics.</li>
+        <li>Verified facts go to <code>data/live.js</code> with the date. If a fact fails this month, last month's verified fact is kept.</li>
+        <li>The app shows each live fact with its quote, link and check date. In free mode, a certificate's "in demand" check stays "not scored yet" instead of dropping to 0.</li>
       </ol>
-      <p class="small">Status: the refresh code is built and tested (dry run). The first real run needs an <code>ANTHROPIC_API_KEY</code> repository secret; until then the app clearly says "not refreshed yet" and uses the hand-checked facts below.</p>
+      <p class="small">Status: built and tested. It needs one repository secret - <code>GEMINI_API_KEY</code> (free) or <code>ANTHROPIC_API_KEY</code> (paid). Until then the app says "not refreshed yet" and uses the hand-checked facts below.</p>
     </section>
 
-    <section class="box">
-      <h2>Step 7 - Proof for every claim</h2>
+    <section class="box" id="proof">
+      <h2>Step 6 - Proof for every claim</h2>
       <ul>
         <li><b>Certificates:</b> every price, exam type and eligibility rule has official proof links - <b>44 links</b> across 31 certificates, shown as "Proof" under each verdict.</li>
         <li><b>Roles:</b> every salary and demand line links to its source (Naukri JobSpeak, India Skills Report 2026, TeamLease Digital, salary guides).</li>
@@ -161,11 +225,12 @@
       <p class="small">Known gap: Oracle's exam pages were down for maintenance on 3 Oct 2026, so the two Oracle prices point to the official page instead of a checked number.</p>
     </section>
 
-    <section class="box">
-      <h2>Step 8 - Testing</h2>
+    <section class="box" id="testing">
+      <h2>Step 7 - Testing</h2>
       <ul>
-        <li><b>46 automated tests</b> (<code>npm test</code>): search and typos, whole-word matching, every verdict type, demand scoring from live data, the fact checker, alternatives, the ad scanner, that every role can win the quiz, and edit distance.</li>
-        <li>Browser checks on phone and laptop sizes, with no console errors.</li>
+        <li><b>52 automated tests</b> (<code>npm test</code>): search and typos, whole-word matching, every verdict type, demand scoring from live data, the fact checker, the free-mode helpers, alternatives, the ad scanner, that every role can win the quiz, and edit distance.</li>
+        <li>Practice refresh with a fake Gemini: the script downloaded the real AWS, Cisco and salary-report pages, kept a correct quote ("Cost 100 USD") and dropped a planted fake one ("quote not found on the page").</li>
+        <li>Browser checks on phone and laptop sizes, and on the live GitHub Pages site, with no console errors.</li>
         <li>Bugs found and fixed:
           <ul>
             <li>The "earning claim" rule matched "Learn 20 tools" - now it needs "earn" plus a money amount.</li>
@@ -175,12 +240,12 @@
             <li>Added the "Not for this role" verdict so a cloud certificate isn't called "Worth it" for a data analyst.</li>
           </ul>
         </li>
-        <li>Security: pasted text is escaped before it is shown (no XSS); no login and no personal data stored.</li>
+        <li>Security: pasted text is escaped before it is shown (no XSS); no login and no personal data stored; API keys live only in GitHub secrets.</li>
       </ul>
     </section>
 
     <section class="box">
-      <h2>Step 9 - Round 1 presentation</h2>
+      <h2>Step 8 - Round 1 presentation</h2>
       <ul>
         <li>6 slides in the organisers' template, styled like our Smart India Hackathon deck (pill headings, icon flows).</li>
         <li>Slides: Title · Idea (problem, solution, innovation) · Technical approach · Feasibility and viability · Impact and benefits · Research and references.</li>
@@ -190,14 +255,14 @@
 
     <section class="box">
       <h2>Tech used</h2>
-      <p>HTML, CSS, JavaScript (no framework, no backend) · Node.js for tests and the refresh script · Claude API (web search + web fetch) for the monthly refresh · GitHub Actions for scheduling · GitHub Pages for hosting (₹0 server cost).</p>
+      <p>HTML, CSS, JavaScript (no framework, no backend) · Node.js for tests and the refresh script · Google Gemini API (free) or Claude API (paid) for the monthly refresh · GitHub Actions for scheduling · GitHub Pages for hosting (₹0 server cost).</p>
     </section>
 
-    <section class="box">
+    <section class="box" id="next">
       <h2>What's next</h2>
       <ul>
         <li>Fill in our own survey numbers on slide 5 and submit Round 1 (3 Oct, 11:59 PM).</li>
-        <li>Add the <code>ANTHROPIC_API_KEY</code> secret on GitHub and run the first refresh, so live, quote-checked facts appear.</li>
+        <li>Create a free Gemini key in Google AI Studio, add it as the <code>GEMINI_API_KEY</code> repository secret, and run a small test refresh from the Actions tab.</li>
         <li>Record a 60-90 second backup video of the demo for Round 2 (5 Oct).</li>
         <li>Later: more certificates and roles; a free-text "Ask CertWise" chat is the point where RAG would be worth adding.</li>
       </ul>

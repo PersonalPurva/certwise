@@ -61,13 +61,27 @@ r = sc("paid-internship", "dev"); eq("paid internship", r.verdict, "Skip");
 const fakeLive = { certs: {
   rhcsa: { demand: [{ url: "https://a.example", quote: "q" }, { url: "https://b.example", quote: "q" }] },
   ccna: { demand: [{ url: "https://a.example", quote: "q" }] },
-  "aws-ccp": { demand: [] }
+  "aws-ccp": { demand: [] },
+  "az-104": { price: { value: "test value" } }   // free refresh: price checked, demand not looked up
 } };
 r = sc("rhcsa", "cloud", fakeLive); eq("2 sources -> 2 pts", r.checks[3].points, 2);
 r = sc("ccna", "sec", fakeLive); eq("1 source -> 1 pt", r.checks[3].points, 1);
 r = sc("aws-ccp", "cloud", fakeLive); eq("0 sources -> 0 pts", r.checks[3].points, 0);
 r = sc("az-900", "cloud", fakeLive); eq("not refreshed -> unscored", r.checks[3].points, null);
 r = sc("workshop", "cloud", fakeLive); eq("generic type -> 0 pts", r.checks[3].points, 0);
+r = sc("az-104", "cloud", fakeLive); eq("free refresh, no demand list -> unscored", r.checks[3].points, null);
+
+// --- free refresh helpers (refresh/pages.js) ---
+const P = require("../refresh/pages.js");
+const longPage = "x ".repeat(3000) + "The CCNA exam fee is USD 300 plus tax. " + "y ".repeat(3000);
+const cut = P.excerpt(longPage, ["fee"], 1500);
+eq("excerpt keeps the fee sentence", cut.includes("The CCNA exam fee is USD 300 plus tax."), true);
+eq("excerpt is shorter", cut.length <= 1500, true);
+eq("short page sent whole", P.excerpt("Exam fee USD 99.", ["fee"], 1500), "Exam fee USD 99.");
+const sample = { steps: [{ type: "thought", signature: "abc" },
+  { type: "model_output", content: [{ type: "text", text: "<json>{\"price\": null}</json>" }] }] };
+eq("gemini answer text read", P.collectText(sample), "<json>{\"price\": null}</json>");
+eq("empty gemini answer", P.collectText({}), "");
 
 // --- fact checker (refresh/verify.js) ---
 const V = require("../refresh/verify.js");

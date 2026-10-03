@@ -1,28 +1,35 @@
 // CertWise - monthly data refresh
 //
-//   node refresh/refresh.mjs              refresh everything (costs API credits)
+//   node refresh/refresh.mjs              refresh everything
 //   node refresh/refresh.mjs --dry-run    show what would be asked, no API calls
 //   node refresh/refresh.mjs --only roles | --only certs | --ids aws-ccp,rhcsa
 //
-// 1. For each role and certificate, Claude searches the web and reads pages (web_search + web_fetch).
-// 2. It must return every fact with the page URL and an exact quote.
-// 3. We fetch each page ourselves and keep the fact ONLY if the quote is really there
-//    and every number in the value is inside the quote (refresh/verify.js).
-// 4. Verified facts go to data/live.js; dropped facts are listed in refresh/report.json.
+// Two ways to run it (picked by which key is set):
+//   GEMINI_API_KEY    (free)  we download the trusted pages listed in our data, Gemini copies out
+//                             the facts with exact quotes. Prices, status, salary, demand, skills.
+//   ANTHROPIC_API_KEY (paid)  Claude also searches the web for new sources (web_search + web_fetch),
+//                             including sources that say a certificate is in demand.
+// Either way: we fetch each page ourselves and keep a fact ONLY if its quote is really there
+// and every number in the value is inside the quote (refresh/verify.js).
+// Verified facts go to data/live.js; dropped facts are listed in refresh/report.json.
 
 import Anthropic from "@anthropic-ai/sdk";
 import fs from "fs";
 import path from "path";
 import { createRequire } from "module";
 import { fileURLToPath } from "url";
+import { askGemini, GEMINI_MODEL } from "./gemini.mjs";
 
 const require = createRequire(import.meta.url);
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, "..");
 const { CERTS, ROLES } = require(path.join(root, "data", "certs.js"));
+const { ROLE_INFO, SOURCES } = require(path.join(root, "data", "roles.js"));
 const { verifyFact, htmlToText, quoteNamesCert } = require(path.join(here, "verify.js"));
+const { excerpt } = require(path.join(here, "pages.js"));
 
-const MODEL = process.env.CERTWISE_MODEL || "claude-opus-5-5";
+const PROVIDER = process.env.CERTWISE_PROVIDER || (process.env.GEMINI_API_KEY ? "gemini" : "claude");
+const MODEL = PROVIDER === "gemini" ? GEMINI_MODEL : (process.env.CERTWISE_MODEL || "claude-opus-5-5");
 const args = process.argv.slice(2);
 const DRY = args.includes("--dry-run");
 const only = args.includes("--only") ? args[args.indexOf("--only") + 1] : null;
@@ -67,11 +74,66 @@ Return:
  "demand": [{"url": "...", "quote": "..."}]}</json>`;
 }
 
-// ---------- calling Claude ----------
+// ---------- free version: Gemini reads pages we downloaded ----------
 
-const client = DRY ? null : new Anthropic();
+const FREE_RULES = `You extract facts for CertWise, a free tool that helps first-year engineering students in India choose a job role and judge certificates.
+
+Use ONLY the PAGES given below. Rules:
+- Report a fact only if it is written in one of the pages. Never use memory, never estimate, never combine numbers into a new number.
+- For every fact give "url" (exactly one of the page URLs below) and "quote": one or two sentences copied word-for-word from that page's text that contain the value. Our software checks the quote against the page, so any change in wording makes the fact fail.
+- If the pages don't say it, use null. An empty answer is better than a guess.
+
+End your answer with the JSON inside <json></json> tags and nothing after it.`;
+
+function freeCertTask(cert) {
+  return `Certificate: ${cert.name} (issued by ${cert.issuer}).
+Find in the pages:
+1. price: the current exam / certificate fee (include the currency).
+2. status: is it currently offered? value "active" or "closed".
+
+Return:
+<json>{"price": {"value": "...", "url": "...", "quote": "..."} or null,
+ "status": {"value": "active or closed", "url": "...", "quote": "..."} or null}</json>`;
+}
+
+// the trusted pages we already list in our data for this role / certificate
+function sourceUrls(kind, item) {
+  if (kind === "cert") return [...new Set(item.src.map(s => s.url))];
+  const info = ROLE_INFO[item.id] || {};
+  const keys = [...((info.salary && info.salary.src) || []), ...((info.demand && info.demand.src) || [])];
+  return [...new Set(keys.filter(k => SOURCES[k]).map(k => SOURCES[k].url))];
+}
+
+function keywordsFor(kind, item) {
+  if (kind === "cert") {
+    return [...item.aliases, "fee", "price", "cost", "usd", "₹", "$", "voucher", "retire", "closed", "discontinu"];
+  }
+  return [...item.name.split(/[\s/]+/).filter(w => w.length > 2), "lpa", "salary", "₹", "fresher", "hiring", "demand", "skill"];
+}
+
+async function askFree(kind, item, report) {
+  const pages = [];
+  for (const url of sourceUrls(kind, item)) {
+    const text = await pageText(url);
+    if (text === null) {
+      report.push({ label: item.id, url, why: "could not read the page ourselves (blocked or needs JavaScript)" });
+      continue;
+    }
+    pages.push({ url, text: excerpt(text, keywordsFor(kind, item), 6000) });
+  }
+  if (pages.length === 0) throw new Error("none of the listed pages could be read");
+  const task = kind === "cert" ? freeCertTask(item) : roleTask(item);
+  const prompt = FREE_RULES + "\n\n" + task + "\n\nPAGES:\n\n" +
+    pages.map((p, i) => `[${i + 1}] URL: ${p.url}\n${p.text}`).join("\n\n");
+  return parseJson(await askGemini(prompt));
+}
+
+// ---------- paid version: Claude searches and reads the web ----------
+
+let client = null;
 
 async function ask(task) {
+  if (!client) client = new Anthropic();
   const messages = [{ role: "user", content: task }];
   for (let round = 0; round < 6; round++) {
     const response = await client.beta.messages.create({
@@ -174,11 +236,24 @@ async function main() {
     certs = certs.filter(c => ids.includes(c.id));
   }
 
-  console.log(`Refreshing ${roles.length} roles and ${certs.length} certificates with ${MODEL}${DRY ? " (dry run)" : ""}`);
+  const free = PROVIDER === "gemini";
+  console.log(`Refreshing ${roles.length} roles and ${certs.length} certificates with ${MODEL}` +
+    (free ? " (free: reading our listed sources)" : " (web search)") + (DRY ? " - dry run" : ""));
   if (DRY) {
-    for (const r of roles) console.log("\n--- role " + r.id + "\n" + roleTask(r));
-    for (const c of certs) console.log("\n--- cert " + c.id + "\n" + certTask(c));
+    for (const r of roles) {
+      console.log("\n--- role " + r.id + "\n" + roleTask(r));
+      if (free) console.log("pages: " + sourceUrls("role", r).join(" "));
+    }
+    for (const c of certs) {
+      console.log("\n--- cert " + c.id + "\n" + (free ? freeCertTask(c) : certTask(c)));
+      if (free) console.log("pages: " + sourceUrls("cert", c).join(" "));
+    }
     return;
+  }
+  if (free ? !process.env.GEMINI_API_KEY : !process.env.ANTHROPIC_API_KEY) {
+    console.log("No API key. Add GEMINI_API_KEY (free, from Google AI Studio) or ANTHROPIC_API_KEY " +
+      "as a repository secret (Settings -> Secrets and variables -> Actions).");
+    process.exit(1);
   }
 
   const live = loadLive();
@@ -186,7 +261,7 @@ async function main() {
 
   for (const r of roles) {
     try {
-      const a = await ask(roleTask(r));
+      const a = free ? await askFree("role", r, report) : await ask(roleTask(r));
       const salary = await check(a.salary, report, r.id + " salary");
       const demand = await check(a.demand, report, r.id + " demand");
       const skills = [];
@@ -207,18 +282,26 @@ async function main() {
 
   for (const c of certs) {
     try {
-      const a = await ask(certTask(c));
+      const a = free ? await askFree("cert", c, report) : await ask(certTask(c));
       const price = await check(a.price, report, c.id + " price");
       const status = await check(a.status, report, c.id + " status");
-      const demand = [];
-      for (const d of (a.demand || []).slice(0, 3)) {
-        const ok = await check(d, report, c.id + " demand", f => quoteNamesCert(f.quote, c));
-        if (ok && !demand.some(x => new URL(x.url).hostname === new URL(ok.url).hostname)) demand.push(ok);
-      }
       const old = live.certs[c.id] || {};
-      live.certs[c.id] = { price: price || old.price || null, status: status || old.status || null,
-                           demand: demand.length ? demand : (old.demand || []) };
-      console.log(`cert ${c.id}: price ${price ? "ok" : "-"}, status ${status ? "ok" : "-"}, demand ${demand.length}`);
+      const entry = { price: price || old.price || null, status: status || old.status || null };
+      if (free) {
+        // the free version doesn't search for demand sources: keep what an earlier search run found,
+        // otherwise leave demand out so the app shows it as "not scored yet" instead of 0 points
+        if (old.demand) entry.demand = old.demand;
+      } else {
+        const demand = [];
+        for (const d of (a.demand || []).slice(0, 3)) {
+          const ok = await check(d, report, c.id + " demand", f => quoteNamesCert(f.quote, c));
+          if (ok && !demand.some(x => new URL(x.url).hostname === new URL(ok.url).hostname)) demand.push(ok);
+        }
+        entry.demand = demand.length ? demand : (old.demand || []);
+      }
+      live.certs[c.id] = entry;
+      console.log(`cert ${c.id}: price ${price ? "ok" : "-"}, status ${status ? "ok" : "-"}` +
+        (entry.demand ? `, demand ${entry.demand.length}` : ""));
     } catch (e) {
       report.push({ label: c.id, why: "error: " + e.message });
       console.log(`cert ${c.id}: error ${e.message}`);

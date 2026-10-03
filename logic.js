@@ -107,7 +107,8 @@ function mentions(text, alias) {
 // live = LIVE from data/live.js; returns the list of verified sources, or null if never refreshed
 function demandSources(cert, live) {
   if (!live || !live.certs || !live.certs[cert.id]) return null;
-  return live.certs[cert.id].demand || [];
+  const demand = live.certs[cert.id].demand;
+  return Array.isArray(demand) ? demand : null;   // no list = demand not looked up yet (free refresh)
 }
 
 // ---------- 3. score one certificate ----------
